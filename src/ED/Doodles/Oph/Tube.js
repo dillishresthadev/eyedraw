@@ -27,7 +27,7 @@ ED.Tube = function(_drawing, _parameterJSON) {
 	this.className = "Tube";
 
 	// Derived parameters
-	this.type = 'Baerveldt 103-250';
+	this.type = 'Baerveldt 101-350';
 	this.platePosition = 'STQ';
 	
 	// Other Parameters
@@ -78,7 +78,7 @@ ED.Tube.prototype.setPropertyDefaults = function() {
 	this.parameterValidationArray['type'] = {
 		kind: 'other',
 		type: 'string',
-		list: ['Ahmed FP7', 'Baerveldt 103-250', 'Baerveldt 101-350', 'Baerveldt 103-350', 'Molteno Single'],
+		list: ['Ahmed FP7', 'Baerveldt 103-250', 'Baerveldt 101-350', 'Baerveldt 103-350', 'Molteno Single', 'PAUL Glaucoma Implant'],
 		animate: false
 	};
 	this.parameterValidationArray['platePosition'] = {
@@ -256,7 +256,24 @@ ED.Tube.prototype.draw = function(_point) {
 			ctx.lineTo(160 * s, 230 * s + d);
 			ctx.bezierCurveTo(120 * s, 250 * s + d, -120 * s, 250 * s + d, -160 * s, 230 * s + d);
 			break;
-			
+
+		case 'PAUL Glaucoma Implant':
+			// Plate
+			ctx.moveTo(0, 230 * s + d);
+			ctx.lineTo(-100 * s, 230 * s + d);
+			ctx.bezierCurveTo(-150 * s, 230 * s + d, -600 * s, 0 * s + d, -300 * s, -200 * s + d);
+			ctx.bezierCurveTo(-200 * s, -240 * s + d, 200 * s, -240 * s + d, 300 * s, -200 * s + d);
+			ctx.bezierCurveTo(600 * s, 0 * s + d, 150 * s, 230 * s + d, 100 * s, 230 * s + d);
+			ctx.lineTo(0, 230 * s + d);
+
+			// Connection flange
+			ctx.moveTo(-160 * s, 230 * s + d);
+			ctx.lineTo(-120 * s, 290 * s + d);
+			ctx.lineTo(120 * s, 290 * s + d);
+			ctx.lineTo(160 * s, 230 * s + d);
+			ctx.bezierCurveTo(120 * s, 250 * s + d, -120 * s, 250 * s + d, -160 * s, 230 * s + d);
+			break;
+
 		case 'Baerveldt 101-350':
 			// Plate
 			ctx.moveTo(0, 230 * s + d);
@@ -321,7 +338,7 @@ ED.Tube.prototype.draw = function(_point) {
 				this.drawSpot(ctx, 180 * s, -180 * s + d, 20 * s, "white");
 
 				// Trapezoid mechanism
-				ctx.beginPath()
+				ctx.beginPath();
 				ctx.moveTo(-100 * s, 230 * s + d);
 				ctx.lineTo(100 * s, 230 * s + d);
 				ctx.lineTo(200 * s, 0 * s + d);
@@ -398,7 +415,22 @@ ED.Tube.prototype.draw = function(_point) {
 				ctx.strokeStyle = "rgba(150,150,150,0.5)";
 				ctx.stroke();
 				break;
-											
+
+			case 'PAUL Glaucoma Implant':
+				// Spots
+				this.drawSpot(ctx, -120 * s, 20 * s + d, 10, "rgba(150,150,150,0.5)");
+				this.drawSpot(ctx, 120 * s, 20 * s + d, 10, "rgba(150,150,150,0.5)");
+
+				// Ridge on flange
+				ctx.beginPath();
+				ctx.moveTo(-30 * s, 250 * s + d);
+				ctx.lineTo(-30 * s, 290 * s + d);
+				ctx.moveTo(30 * s, 250 * s + d);
+				ctx.lineTo(30 * s, 290 * s + d);
+				ctx.strokeStyle = "rgba(150,150,150,0.5)";
+				ctx.stroke();
+				break;
+
 			case 'Baerveldt 101-350':
 				// Spots
  				this.drawSpot(ctx, -120 * s, 20 * s + d, 10, "rgba(150,150,150,0.5)");
@@ -495,7 +527,16 @@ ED.Tube.prototype.draw = function(_point) {
 		// Draw handles if selected
 		if (this.isSelected && !this.isForDrawing) this.drawHandles(_point);
 	}
-	
+
+	ctx.save();
+	ctx.font = "46px Arial";
+	ctx.fillStyle = 'black';
+	ctx.fillText(this.type, -(ctx.measureText(this.type).width / 2), -575);
+	ctx.rotate(-Math.PI / 4);
+
+	ctx.restore();
+
+
 	// Return value indicating successful hittest
 	return this.isClicked;
 }
