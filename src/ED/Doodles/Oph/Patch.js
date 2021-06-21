@@ -63,8 +63,7 @@ ED.Patch.prototype.setPropertyDefaults = function() {
 	this.parameterValidationArray['material'] = {
 		kind: 'other',
 		type: 'string',
-		list: ['Sclera', 'Tenons', 'Tutoplast', 'Cornea'],
-		list: ['Sclera', 'Tenons', 'Tutoplast', 'Cornea'],
+		list: ['Sclera', 'Tenons', 'Cornea', 'Pericardium', 'Fascia lata', 'Other'],
 		animate: false
 	};
 }
@@ -138,15 +137,23 @@ ED.Patch.prototype.draw = function(_point) {
 		case 'Sclera':
 			ctx.fillStyle = "rgba(200,200,50,0.5)";
 			break;
-        case 'Cornea':
-        	ctx.fillStyle = "rgba(180,180,180,0.5)";
-        	break;
 		case 'Tenons':
-			ctx.fillStyle = "rgba(200,200,200,0.5)";
+			ctx.fillStyle = "rgb(51,193,107,0.5)";
 			break;
-		case 'Tutoplast':
-			ctx.fillStyle = "rgba(230,230,230,0.5)";
+		case 'Pericardium':
+			ctx.fillStyle = "rgb(245,166,35,0.5)";
 			break;
+		case 'Fascia lata':
+			ctx.fillStyle = "rgb(155,155,155,0.5)";
+			break;
+        case 'Cornea':
+			ctx.fillStyle = "rgb(40,101,231,0.5)";
+        	break;
+		case 'Other':
+			ctx.fillStyle = "rgb(255,255,255,0.5)";
+			break;
+		default:
+			ctx.fillStyle = "rgb(155,155,155,0.3)";
 	}
 	ctx.strokeStyle = "rgba(120,120,120,0.5)";
 
@@ -168,6 +175,8 @@ ED.Patch.prototype.draw = function(_point) {
 	// Coordinates of handles (in canvas plane)
 	this.handleArray[3].location = this.transform.transformPoint(new ED.Point(this.width / 2, -this.height / 2));
 
+	this.drawLabel(ctx);
+
 	// Draw handles if selected
 	if (this.isSelected && !this.isForDrawing) this.drawHandles(_point);
 
@@ -176,10 +185,53 @@ ED.Patch.prototype.draw = function(_point) {
 }
 
 /**
+ * Displays a text anotation over the doodle to show which material is used.
+ * @param ctx 
+ */
+ED.Patch.prototype.drawLabel = function (ctx) {
+
+	var label = '';
+	switch (this.material) {
+		case 'Sclera':
+			label = 'SCL';
+			break;
+		case 'Tenons':
+			label = 'T';
+			break;
+		case 'Pericardium':
+			label = 'P';
+			break;
+		case 'Fascia lata':
+			label = 'FL';
+			break;
+		case 'Cornea':
+			label = 'C';
+			break;
+		case 'Other':
+			label = 'Other';
+			break;
+	}
+
+	ctx.save();
+	ctx.beginPath();
+
+	ctx.fillStyle = "black";
+	ctx.font = "36px Arial";
+	ctx.fillText(label, 0 - (ctx.measureText(label).width / 2), this.height / 2 - 20);
+	ctx.fill();
+	ctx.stroke();
+	ctx.restore();
+};
+
+/**
  * Returns a string containing a text description of the doodle
  *
  * @returns {String} Description of doodle
  */
 ED.Patch.prototype.description = function() {
+	if (this.material === 'Other') {
+		return 'patch';
+	}
+
 	return this.material + " patch";
 }
