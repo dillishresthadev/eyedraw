@@ -529,9 +529,17 @@ ED.Tube.prototype.draw = function(_point) {
 	}
 
 	ctx.save();
-	ctx.font = "46px Arial";
+	var typeSplit = this.type.split(" ");
+	var typeHeight = 46;
+	var typeStartHeight = 750;
+	ctx.font = typeHeight.toString() + "px Arial";
 	ctx.fillStyle = 'black';
-	ctx.fillText(this.type, -(ctx.measureText(this.type).width / 2), -575);
+
+	typeSplit.forEach(printType);
+	function printType(value, index, array) {
+		printHeight = typeStartHeight - (typeHeight * (index));
+		ctx.fillText(value, -(ctx.measureText(value).width / 2), -printHeight);
+	}
 	ctx.rotate(-Math.PI / 4);
 
 	ctx.restore();
