@@ -24452,7 +24452,7 @@ ED.CorneaCrossSection.prototype.setPropertyDefaults = function() {
 	this.parameterValidationArray['pachymetry'] = {
 		kind: 'other',
 		type: 'int',
-		range: new ED.Range(400, 700),
+		range: new ED.Range(0, 1500),
 		precision: 1,
 		animate: false
 	};
