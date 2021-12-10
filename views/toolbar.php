@@ -27,7 +27,7 @@
 				<?php foreach($mainItems as $item) {?>
 <li id="<?php echo $item['classname'].$idSuffix ?>">
     <a class="ed-button" href="#" data-function="addDoodle" data-arg="<?php echo $item['classname'] ?>">
-        <i class="icon-ed-<?=$item['classname'];?>"></i>
+        <i class="ed-i icon-ed-<?=$item['classname'];?>"></i>
         <span class="label"><?php echo $item['title'] ?></span>
     </a>
 </li><?php } ?>
@@ -39,7 +39,7 @@
 							<?php foreach($extraItems as $item) {?>
 <li id="<?php echo $item['classname'].$idSuffix ?>">
     <a class="ed-button" href="#" data-function="addDoodle" data-arg="<?php echo $item['classname'] ?>">
-        <i class="icon-ed-<?=$item['classname'];?>"></i>
+        <i class="ed-i icon-ed-<?=$item['classname'];?>"></i>
         <span class="label"><?php echo $item['title'] ?></span>
     </a>
 </li><?php }?>
