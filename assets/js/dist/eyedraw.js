@@ -55416,13 +55416,13 @@ ED.RetinoscopyPowerCross.prototype.dependentParameterValues = function(_paramete
 			break;
 
         case 'power1':
-            returnArray['powerSign1'] = parseInt(_value) >= 0 ? '+' : '-';
+            returnArray['powerSign1'] = parseFloat(_value) >= 0 ? '+' : '-';
             returnArray['powerInt1'] = Math.abs(parseInt(_value));
             returnArray['powerDp1'] = (Math.abs(_value) - Math.abs(parseInt(_value))).toFixed(2).substring(2, 4);
             break;
 
         case 'power2':
-            returnArray['powerSign2'] = parseInt(_value) >= 0 ? '+' : '-';
+            returnArray['powerSign2'] = parseFloat(_value) >= 0 ? '+' : '-';
             returnArray['powerInt2'] = Math.abs(parseInt(_value));
             returnArray['powerDp2'] = (Math.abs(_value) - Math.abs(parseInt(_value))).toFixed(2).substring(2, 4);
             break;
