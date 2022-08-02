@@ -48353,7 +48353,8 @@ ED.OpticDisc.prototype.draw = function(_point) {
  * @returns {String} Description of doodle
  */
 ED.OpticDisc.prototype.description = function() {
-	var returnString = "";
+	//default to a non-empty string to avoid the autoreport "No abnormality" default
+	var returnString = " ";
 
 	// Expert mode
 	if (this.mode === "Expert") {
@@ -48412,7 +48413,7 @@ ED.OpticDisc.prototype.description = function() {
 
 			for (var k = 0; k < notchArray.length; k++) {
 				if (notchArray[k].startHour === notchArray[k].endHour) {
-					returnString += " at " + notchArray[k].startHour+ " o'clock";
+					returnString += " at " + notchArray[k].startHour + " o'clock";
 				} else {
 					returnString += " from " + notchArray[k].startHour + " o'clock to " + notchArray[k].endHour + " o'clock";
 				}
@@ -48421,9 +48422,6 @@ ED.OpticDisc.prototype.description = function() {
 					returnString += ", and";
 				}
 			}
-		} else {
-
-			returnString = this.drawing.doodleArray.length === 1 ? "No abnormality" : "";
 		}
 	}
 	// Basic mode
@@ -48431,10 +48429,6 @@ ED.OpticDisc.prototype.description = function() {
 		if (this.cdRatio === "No view") {
 			returnString = "No view";
 		}
-    if (returnString.length === 0 && this.drawing.doodleArray.length === 1) {
-      returnString = "No abnormality";
-    }
-
   }
 	return returnString;
 };
