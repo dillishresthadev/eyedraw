@@ -135,7 +135,7 @@ window.eyedrawDoodleTitles = {
     "RetinalArteryOcclusionPostPole": "Retinal artery occlusion",
     "RetinalHaemorrhage": "Retinal haemorrhage",
     "RetinalTouch": "Retinal touch",
-    "RetinalVeinOcclusionPostPole": "Retinal vein occluson",
+    "RetinalVeinOcclusionPostPole": "Retinal vein occlusion",
     "Retinoschisis": "Retinoschisis",
     "RK": "Radial keratotomy",
     "RoundHole": "Round hole",
