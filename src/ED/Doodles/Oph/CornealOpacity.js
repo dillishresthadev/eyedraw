@@ -45,7 +45,7 @@ ED.CornealOpacity = function(_drawing, _parameterJSON) {
 	this.savedParameterArray = ['originX', 'originY', 'rotation', 'fHeight', 'fWidth', 'depth', 'infiltrateWidth','d','minY','maxY'];
 
 	// Parameters in doodle control bar
-	this.controlParameterArray = {'fHeight':'Height', 'fWidth':'Width', 'depth':'Depth (%)', 'infiltrateWidth':'Infiltrate fWidth'};
+	this.controlParameterArray = { 'fHeight': 'Height', 'fWidth': 'Width', 'depth': 'Depth (%)', 'infiltrateWidth': 'Infiltrate Width' };
 
 	// Call superclass constructor
 	ED.Doodle.call(this, _drawing, _parameterJSON);
