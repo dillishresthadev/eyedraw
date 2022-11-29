@@ -1239,6 +1239,7 @@ ED.Doodle.prototype.parameterElement = function(_parameter, showLabel) {
 			// Create a text input element
 			element = document.createElement('input');
     		element.type = 'text';
+    		element.classList.add("cols-full");
     		element.setAttribute('id', this.parameterControlElementId(_parameter));
     		break;
 
