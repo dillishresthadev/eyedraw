@@ -2904,6 +2904,16 @@ ED.Drawing.prototype.getScaleLevel = function() {
 	return this.globalScaleFactor;
 };
 
+// Takes care of left - right issues by flipping drawing
+// needs to be called only once,
+// drawing.isFlipped is the flag
+ED.Drawing.prototype.flipDrawingHorizontally = function () {
+	if (!this.isFlipped) {
+		this.transform.scale(-1, 1);
+		this.isFlipped = true;
+	}
+}
+
 /**
  * Changes the drawing colour of freehand drawing
  *

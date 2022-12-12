@@ -20,3 +20,24 @@ MathHelper.calculateLinearFunctionFromPoints = function(x1, y1, x2, y2, x) {
     var b = y2 - a * x2;
     return a * x + b;
 };
+
+MathHelper.perpendicularToLine = function(x1, y1, x2, y2, x3, y3, dist) {
+    let a = y1 - y2;
+    let b = x2 - x1;
+    let norm = Math.sqrt(a*a + b*b);
+    a = a / norm;
+    b = b / norm;
+    let x4 = x3 + a * dist;
+    let y4 = y3 + b * dist;
+    return {x: x4, y: y4};
+};
+
+MathHelper.calculateBezierPoints = function (t, startPoint, endPoint, controlPoint1, controlPoint2) {
+    let B0_t = Math.pow(1 - t, 3);
+    let B1_t = 3 * t * Math.pow((1 - t), 2);
+    let B2_t = 3 * Math.pow(t, 2) * (1 - t);
+    let B3_t = Math.pow(t, 3);
+    let x = (B0_t * startPoint.x) + (B1_t * controlPoint1.x) + (B2_t * controlPoint2.x) + (B3_t * endPoint.x)
+    let y = (B0_t * startPoint.y) + (B1_t * controlPoint1.y) + (B2_t * controlPoint2.y) + (B3_t * endPoint.y)
+    return {x:x, y:y};
+};

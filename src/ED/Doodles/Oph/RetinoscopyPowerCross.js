@@ -304,6 +304,14 @@ ED.RetinoscopyPowerCross.prototype.calcRx = function() {
 	if (angle < 0)
 		angle += 180;
 
+
+	if (this.angle1 == 180 && power1 >= power2)
+		angle = 180;
+
+
+	if (this.angle2 == 180 && power2 > power1)
+		angle = 180;
+
 	return {
 		pSphere: pSphere,
 		pCyl: pCyl,

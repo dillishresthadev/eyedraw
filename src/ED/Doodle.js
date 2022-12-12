@@ -459,7 +459,11 @@ ED.Doodle.prototype.willDelete = function() {
  * @param {Float} _x Distance to move along x axis in doodle plane
  * @param {Float} _y Distance to move along y axis in doodle plane
  */
-ED.Doodle.prototype.move = function(_x, _y) {
+ED.Doodle.prototype.move = function (_x, _y) {
+
+	if (this.drawing.isFlipped) {
+		_x *= -1;
+	}
 
 	// Ensure parameters are integers
 	var x = Math.round(+_x);
@@ -471,15 +475,19 @@ ED.Doodle.prototype.move = function(_x, _y) {
 		var newOriginY = this.parameterValidationArray['originY']['range'].constrain(this.originY + y, this.scaleLevel);
 
 		// Move doodle to new position
-		if (x != 0) this.setSimpleParameter('originX', newOriginX);
-		if (y != 0) this.setSimpleParameter('originY', newOriginY);
+		if (x !== 0) {
+			this.setSimpleParameter('originX', newOriginX);
+		}
+		if (y !== 0) {
+			this.setSimpleParameter('originY', newOriginY);
+		}
 
 		// Update dependencies
 		this.updateDependentParameters('originX');
 		this.updateDependentParameters('originY');
 
 		// Only need to change rotation if doodle has moved
-		if (x != 0 || y != 0) {
+		if (x !== 0 || y !== 0) {
 			// If doodle isOriented is true, rotate doodle around centre of canvas (eg makes 'U' tears point to centre)
 			if (this.isOrientated) {
 
@@ -522,7 +530,7 @@ ED.Doodle.prototype.orientation = function() {
  */
 ED.Doodle.prototype.draw = function(_point) {
 	// Determine function mode
-	if (typeof(_point) != 'undefined') {
+	if (typeof (_point) !== 'undefined') {
 		this.drawFunctionMode = ED.drawFunctionMode.HitTest;
 	} else {
 		this.drawFunctionMode = ED.drawFunctionMode.Draw;
@@ -530,6 +538,10 @@ ED.Doodle.prototype.draw = function(_point) {
 
 	// Get context
 	var ctx = this.drawing.context;
+
+	if (this.drawing.isFlipped) {
+		ctx.scale(-1, 1);
+	}
 
 	// Augment transform with properties of this doodle
 	ctx.translate(this.originX, this.originY);

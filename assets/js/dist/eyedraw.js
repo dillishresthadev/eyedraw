@@ -3164,6 +3164,16 @@ ED.Drawing.prototype.getScaleLevel = function() {
 	return this.globalScaleFactor;
 };
 
+// Takes care of left - right issues by flipping drawing
+// needs to be called only once,
+// drawing.isFlipped is the flag
+ED.Drawing.prototype.flipDrawingHorizontally = function () {
+	if (!this.isFlipped) {
+		this.transform.scale(-1, 1);
+		this.isFlipped = true;
+	}
+}
+
 /**
  * Changes the drawing colour of freehand drawing
  *
@@ -3713,7 +3723,11 @@ ED.Doodle.prototype.willDelete = function() {
  * @param {Float} _x Distance to move along x axis in doodle plane
  * @param {Float} _y Distance to move along y axis in doodle plane
  */
-ED.Doodle.prototype.move = function(_x, _y) {
+ED.Doodle.prototype.move = function (_x, _y) {
+
+	if (this.drawing.isFlipped) {
+		_x *= -1;
+	}
 
 	// Ensure parameters are integers
 	var x = Math.round(+_x);
@@ -3725,15 +3739,19 @@ ED.Doodle.prototype.move = function(_x, _y) {
 		var newOriginY = this.parameterValidationArray['originY']['range'].constrain(this.originY + y, this.scaleLevel);
 
 		// Move doodle to new position
-		if (x != 0) this.setSimpleParameter('originX', newOriginX);
-		if (y != 0) this.setSimpleParameter('originY', newOriginY);
+		if (x !== 0) {
+			this.setSimpleParameter('originX', newOriginX);
+		}
+		if (y !== 0) {
+			this.setSimpleParameter('originY', newOriginY);
+		}
 
 		// Update dependencies
 		this.updateDependentParameters('originX');
 		this.updateDependentParameters('originY');
 
 		// Only need to change rotation if doodle has moved
-		if (x != 0 || y != 0) {
+		if (x !== 0 || y !== 0) {
 			// If doodle isOriented is true, rotate doodle around centre of canvas (eg makes 'U' tears point to centre)
 			if (this.isOrientated) {
 
@@ -3776,7 +3794,7 @@ ED.Doodle.prototype.orientation = function() {
  */
 ED.Doodle.prototype.draw = function(_point) {
 	// Determine function mode
-	if (typeof(_point) != 'undefined') {
+	if (typeof (_point) !== 'undefined') {
 		this.drawFunctionMode = ED.drawFunctionMode.HitTest;
 	} else {
 		this.drawFunctionMode = ED.drawFunctionMode.Draw;
@@ -3784,6 +3802,10 @@ ED.Doodle.prototype.draw = function(_point) {
 
 	// Get context
 	var ctx = this.drawing.context;
+
+	if (this.drawing.isFlipped) {
+		ctx.scale(-1, 1);
+	}
 
 	// Augment transform with properties of this doodle
 	ctx.translate(this.originX, this.originY);
@@ -6813,6 +6835,75 @@ ED.Squiggle.prototype.json = function() {
 
 	return s;
 }
+const Turtle = function (data) {
+    this.point = new Turtle.Point({ x: data.x, y: data.y });
+    this.vector = new Turtle.Vector({ x: data.vx, y: data.vy });
+    return this;
+};
+
+Turtle.prototype.turn = function (angle) {
+    this.vector.rotate(angle);
+    return this;
+};
+
+Turtle.prototype.turnLeft = function () {
+    this.vector.rotate(-Math.PI/2);
+    return this;
+};
+
+Turtle.prototype.turnRight = function () {
+    this.vector.rotate(Math.PI/2);
+    return this;
+};
+
+Turtle.prototype.move = function (len) {
+    this.vector.setLength(Math.abs(len));
+    if (len>0) {
+        this.point.add(this.vector);
+    }
+    else {
+        this.point.subtract(this.vector);
+    }
+    return this;
+};
+
+Turtle.prototype.getPoint = function () {
+    return {x: this.point.x, y: this.point.y};
+};
+
+Turtle.Point = function (data) {
+    this.x = data.x;
+    this.y = data.y;
+};
+
+Turtle.Point.prototype.add = function (otherPoint) {
+    this.x += otherPoint.x;
+    this.y += otherPoint.y;
+};
+
+Turtle.Point.prototype.subtract = function (otherPoint) {
+    this.x -= otherPoint.x;
+    this.y -= otherPoint.y;
+};
+
+Turtle.Vector = function (data) {
+    this.x = data.x;
+    this.y = data.y;
+};
+
+Turtle.Vector.prototype.rotate = function (phi) {
+    let newX = this.x * Math.cos(phi) - this.y * Math.sin(phi);
+    let newY = this.x * Math.sin(phi) + this.y * Math.cos(phi);
+    this.x = newX;
+    this.y = newY;
+};
+
+Turtle.Vector.prototype.setLength = function (newLen) {
+    let currLen = Math.sqrt(this.x * this.x +  this.y * this.y);
+    this.x = this.x / currLen * newLen;
+    this.y = this.y / currLen * newLen;
+};
+
 /**
  * Copyright (C) OpenEyes Foundation, 2011-2017
  * This file is part of OpenEyes.
@@ -8095,6 +8186,27 @@ MathHelper.calculateLinearFunctionFromPoints = function(x1, y1, x2, y2, x) {
     var a = (y2 - y1) / (x2 - x1);
     var b = y2 - a * x2;
     return a * x + b;
+};
+
+MathHelper.perpendicularToLine = function(x1, y1, x2, y2, x3, y3, dist) {
+    let a = y1 - y2;
+    let b = x2 - x1;
+    let norm = Math.sqrt(a*a + b*b);
+    a = a / norm;
+    b = b / norm;
+    let x4 = x3 + a * dist;
+    let y4 = y3 + b * dist;
+    return {x: x4, y: y4};
+};
+
+MathHelper.calculateBezierPoints = function (t, startPoint, endPoint, controlPoint1, controlPoint2) {
+    let B0_t = Math.pow(1 - t, 3);
+    let B1_t = 3 * t * Math.pow((1 - t), 2);
+    let B2_t = 3 * Math.pow(t, 2) * (1 - t);
+    let B3_t = Math.pow(t, 3);
+    let x = (B0_t * startPoint.x) + (B1_t * controlPoint1.x) + (B2_t * controlPoint2.x) + (B3_t * endPoint.x)
+    let y = (B0_t * startPoint.y) + (B1_t * controlPoint1.y) + (B2_t * controlPoint2.y) + (B3_t * endPoint.y)
+    return {x:x, y:y};
 };
 
 /**
@@ -42924,6 +43036,759 @@ ED.KrukenbergSpindle.prototype.description = function() {
  */
 
 /**
+ * Lacrimal
+ *
+ * @class Lacrimal
+ * @property {String} className Name of doodle subclass
+ * @param {Drawing} _drawing
+ * @param {Object} _parameterJSON
+ */
+
+ED.Lacrimal = function (_drawing, _parameterJSON) {
+    this.className = "Lacrimal";
+    this.yShift = 100; // for easy repositioning
+
+    ED.Doodle.call(this, _drawing, _parameterJSON);
+    if (this.drawing.eye === ED.eye.Left) {
+        this.drawing.flipDrawingHorizontally();
+    }
+
+    this.loaded = false;
+    // parameters of child doodles are to be tracked, saved, and set in this doodle
+    // Punctum parameters
+    this.savedParameterArray = ['flowType_lowerPunctum', 'flowType_upperPunctum'];
+    if (_parameterJSON) {
+        this.flowType_lowerPunctum = _parameterJSON.flowType_lowerPunctum;
+        this.flowType_upperPunctum = _parameterJSON.flowType_upperPunctum;
+    }
+    else {
+        this.flowType_lowerPunctum = 'patent';
+        this.flowType_upperPunctum = 'patent';
+    }
+    this.lowerPunctumParams = { x1: -50, y1: 55 + this.yShift, x2: -90, y2: -10 + this.yShift, flowType: this.flowType_lowerPunctum, lacrimalChildName: 'lowerPunctum' }; // , isLower: 'true'
+    this.upperPunctumParams = { x1: -50, y1: -250 + this.yShift, x2: -85, y2: -190 + this.yShift, flowType: this.flowType_upperPunctum, lacrimalChildName: 'upperPunctum' }; // , isLower: 'false'
+
+    // Duct parameters
+    this.lowerDuctParams = { x1: -60, y1: 55 + this.yShift, x2: 200, y2: -100 + this.yShift, lacrimalChildName: 'lowerDuct' };
+    this.upperDuctParams = { x1: -60, y1: -250 + this.yShift, x2: 200, y2: -100 + this.yShift, lacrimalChildName: 'upperDuct' };
+    this.horizontalDuctParams = { x1: 200, y1: -100 + this.yShift, x2: 440, y2: -100 + this.yShift, lacrimalChildName: 'horizontalDuct' };
+    let ductParams = ['flowType', 'flowPct', 'flowPosition', 'flowDirection'];
+    let defaultParams = ['patent', 100, 50, this.drawing.isFlipped ? 1 : -1]; // redundant, flowPct determines
+    let ductNames = ['upperDuct', 'lowerDuct', 'horizontalDuct'];
+    ductNames.forEach(ductName => {
+        ductParams.forEach((ductParam, index) => {
+            let fieldName = ductParam + '_' + ductName;
+            this.savedParameterArray.push(fieldName);
+            if (_parameterJSON)  // doodle is loaded
+            {
+                this[fieldName] = _parameterJSON[fieldName];
+            }
+            else {
+                this[fieldName] = defaultParams[index];
+            }
+
+            this[ductName + 'Params'][ductParam] = this[fieldName];
+        });
+    });
+
+    // notifications for adding parameter changes in child doodles
+    this.drawing.registerForNotifications(this, 'parameterChangedFcn', 'parameterChanged')
+    this.drawing.registerForNotifications(this, 'onReady', 'ready')
+};
+
+/**
+ * Sets superclass and constructor
+ */
+ED.Lacrimal.prototype = new ED.Doodle;
+ED.Lacrimal.prototype.constructor = ED.Lacrimal;
+ED.Lacrimal.superclass = ED.Doodle.prototype;
+
+// start adding child doodles only when everything is ready
+ED.Lacrimal.prototype.onReady = function () {
+    this.upperPunctum = this.drawing.addDoodle('LacrimalPunctum', this.upperPunctumParams);
+    this.lowerPunctum = this.drawing.addDoodle('LacrimalPunctum', this.lowerPunctumParams);
+    this.horizontalDuct = this.drawing.addDoodle('LacrimalDuct', this.horizontalDuctParams);
+    this.upperDuct = this.drawing.addDoodle('LacrimalDuct', this.upperDuctParams);
+    this.lowerDuct = this.drawing.addDoodle('LacrimalDuct', this.lowerDuctParams);
+    this.drawing.deselectDoodles();
+    this.loaded = true;
+};
+
+// capture changed parameters in child doodles
+ED.Lacrimal.prototype.parameterChangedFcn = function (data) {
+    if (this.loaded) {
+        let _doodleName = data.object.doodle.lacrimalChildName; // ignore changes in unassociated doodles
+        if (_doodleName) {
+            let _parameter = data.object.parameter;
+            let _value = data.object.value;
+            this[_parameter + '_' + _doodleName] = _value; // keep track of changes in ducts and puncta
+        }
+        // if upper and lower ducts are blocked, block common duct as well
+        if (this.upperDuct.flowPct === 0 && this.lowerDuct.flowPct === 0 && this.horizontalDuct.flowType !== 'blocked') {
+            this.horizontalDuct.setParameterFromString('flowPct', '0');
+            // if either upper or lower duct is blocked, flow in common duct will be equal to the remaining unblocked one's
+        }
+        else if (this.upperDuct.flowPct === 0 && this.lowerDuct.flowPct > 0 && this.horizontalDuct.flowPct !== this.lowerDuct.flowPct) {
+            this.horizontalDuct.setParameterFromString('flowPct', this.lowerDuct.flowPct + '');
+        }
+        else if (this.lowerDuct.flowPct === 0 && this.upperDuct.flowPct > 0 && this.horizontalDuct.flowPct !== this.upperDuct.flowPct) {
+            this.horizontalDuct.setParameterFromString('flowPct', this.upperDuct.flowPct + '');
+        }
+    }
+};
+
+/**
+ * Sets handle attributes
+ */
+ED.Lacrimal.prototype.setPropertyDefaults = function () {
+    this.isMoveable = false;
+    this.isRotatable = false;
+    this.isScaleable = false;
+    this.isUnique = true;
+    this.originX = 0;
+    this.originY = 0;
+
+    this.parameterValidationArray.flowType_upperDuct = {
+        kind: 'other',
+        type: 'string',
+        list: ['patent', 'partial flow', 'blocked'],
+        animate: false
+    };
+
+    this.parameterValidationArray.flowPct_upperDuct = {
+        kind: 'other',
+        type: 'int',
+        range: new ED.Range(0, 100),
+        animate: false
+    };
+    this.parameterValidationArray.flowPosition_upperDuct = {
+        kind: 'other',
+        type: 'float',
+        range: new ED.Range(0, 1),
+        animate: false
+    };
+    this.parameterValidationArray.flowDirection_upperDuct = {
+        kind: 'other',
+        type: 'int',
+        range: new ED.Range(-1, 1),
+        animate: false
+    };
+};
+
+ED.Lacrimal.prototype.dependentParameterValues = function (_parameter, _value) {
+    var returnArray = {};
+    return returnArray;
+};
+
+/**
+ * Draws doodle or performs a hit test if a Point parameter is passed
+ *
+ * @param {Point} _point Optional point in canvas plane, passed if performing hit test
+ */
+
+ED.Lacrimal.prototype.draw = function (_point) {
+    // Get context
+    var ctx = this.drawing.context;
+    // Call draw method in superclass
+    ED.LacrimalDuct.superclass.draw.call(this, _point);
+
+    // lids parameters
+    let upperRight = new ED.Point(-80, -180 + this.yShift);
+    let commonLeft = new ED.Point(-450, -90 + this.yShift);
+    let controlU1 = new ED.Point(-175, -250 + this.yShift);
+    let controlU2 = new ED.Point(-375, -250 + this.yShift);
+    let lowerRight = new ED.Point(-80, -20 + this.yShift);
+    if (this.flowType_lowerPunctum === 'everted') {
+        lowerRight.x = -125;
+        lowerRight.y = 40 + this.yShift;
+    }
+    let controlL1 = new ED.Point(-375, 50 + this.yShift);
+    let controlL2 = new ED.Point(-175, 50 + this.yShift);
+
+    // draw lids
+    ctx.beginPath();
+    ctx.strokeStyle = "rgba(0,0,209,1)";
+    ctx.fillStyle = "rgba(0,0,0,0)";
+    ctx.lineWidth = 12;
+    ctx.shadowColor = 'black';
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetY = -4;
+    ctx.moveTo(upperRight.x, upperRight.y);
+    ctx.bezierCurveTo(controlU1.x, controlU1.y, controlU2.x, controlU2.y, commonLeft.x, commonLeft.y);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(commonLeft.x, commonLeft.y);
+    ctx.bezierCurveTo(controlL1.x, controlL1.y, controlL2.x, controlL2.y, lowerRight.x, lowerRight.y);
+    ctx.strokeStyle = "rgba(0,0,209,1)";
+    ctx.fillStyle = "rgba(0,0,0,0)";
+    ctx.shadowOffsetY = 4;
+    ctx.stroke();
+
+    this.lidCurveParams = { startPoint: commonLeft, endPoint: lowerRight, controlPoint1: controlL1, controlPoint2: controlL2 };
+
+    // draw the ducts
+    ctx.beginPath();
+    ctx.strokeStyle = "rgba(0,0,0,1)";
+    ctx.fillStyle = "rgba(0,0,0,0)";
+    ctx.lineWidth = 20;
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetY = 0;
+    ctx.moveTo(this.horizontalDuctParams.x2, -105 + this.yShift);
+    ctx.lineTo(this.horizontalDuctParams.x2, 300 + this.yShift);
+    ctx.lineTo(this.horizontalDuctParams.x2, this.horizontalDuctParams.y2);
+    ctx.lineTo(this.horizontalDuctParams.x1, this.horizontalDuctParams.y1);
+    ctx.lineTo(this.upperDuctParams.x1, this.upperDuctParams.y1);
+    ctx.moveTo(this.horizontalDuctParams.x1, this.horizontalDuctParams.y1);
+    ctx.lineTo(this.lowerDuctParams.x1, this.lowerDuctParams.y1);
+    ctx.stroke();
+
+    // Draw boundary path (also hit testing)
+    this.drawBoundary(_point);
+
+    // Return value indicating successful hittest
+    return this.isClicked;
+};
+
+// a helper to anchor to the lower lid, e.g. lid laxity
+ED.Lacrimal.prototype.getLidCurveParams = function () {
+    return this.lidCurveParams;
+};
+
+ED.Lacrimal.prototype.description = function () {
+    var returnValue = "";
+    if (this.loaded) {
+        returnValue += 'Upper duct: ' + this.upperDuct.flowType + ', flow ' + this.upperDuct.flowPct + '%. ';
+        returnValue += 'Lower duct: ' + this.lowerDuct.flowType + ', flow ' + this.lowerDuct.flowPct + '%. ';
+        returnValue += 'Horizontal duct: ' + this.horizontalDuct.flowType + ', flow ' + this.horizontalDuct.flowPct + '%. ';
+        returnValue += 'Upper punctum: ' + this.upperPunctum.flowType + '. ';
+        returnValue += 'Lower punctum: ' + this.lowerPunctum.flowType + '. ';
+    }
+    return returnValue;
+};
+
+/**
+ * OpenEyes
+ *
+ * Copyright (C) OpenEyes Foundation, 2011-2017
+ * This file is part of OpenEyes.
+ * OpenEyes is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * OpenEyes is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+ * You should have received a copy of the GNU Affero General Public License along with OpenEyes in a file titled COPYING. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @package OpenEyes
+ * @link http://www.openeyes.org.uk
+ * @author OpenEyes <info@openeyes.org.uk>
+ * @copyright Copyright 2011-2017, OpenEyes Foundation
+ * @license http://www.gnu.org/licenses/agpl-3.0.html The GNU Affero General Public License V3.0
+ */
+
+ED.LacrimalDuct = function (_drawing, _parameterJSON) {
+    this.className = "LacrimalDuct";
+    this.loaded = false;
+    this.flowHandle = 0;
+
+    this.savedParameterArray = ['flowType', 'flowPct', 'flowDirection', 'flowPosition', 'x1', 'x2', 'y1', 'y2', 'lacrimalChildName'];
+    this.controlParameterArray = { 'flowType': 'flow', 'flowPct': 'flow percentage' };
+
+    // Call superclass constructor
+    ED.Doodle.call(this, _drawing, _parameterJSON);
+    this.drawing.registerForNotifications(this, 'onReady', 'ready');
+};
+
+/**
+ * Sets superclass and constructor
+ */
+ED.LacrimalDuct.prototype = new ED.Doodle;
+ED.LacrimalDuct.prototype.constructor = ED.LacrimalDuct;
+ED.LacrimalDuct.superclass = ED.Doodle.prototype;
+
+ED.LacrimalDuct.prototype.onReady = function () { // x,y is not set earlier for some reason
+    this.originX = this.x1;
+    this.originY = this.y1;
+    this.xl = this.x2 - this.x1;
+    this.yl = this.y2 - this.y1;
+    this.startPoint = new ED.Point(this.x1, this.x2);
+    this.endPoint = new ED.Point(this.x2, this.y2);
+    this.normalPoint = new ED.Point(this.x2 - this.x1, this.y2 - this.y1);
+    this.squiggleArray[0].pointsArray[this.flowHandle].x = this.xl * this.flowPosition / 100;
+    this.squiggleArray[0].pointsArray[this.flowHandle].y = this.yl * this.flowPosition / 100;
+    this.loaded = true;
+    this.drawing.repaint();
+};
+
+ED.LacrimalDuct.prototype.setHandles = function () {
+
+    this.handleArray[this.flowHandle] = new ED.Doodle.Handle(null, true, ED.Mode.Handles, false);
+    this.handleVectorRangeArray = [];
+    this.handleVectorRangeArray[this.flowHandle] = { length: new ED.Range(-0, +1000), angle: new ED.Range(0, Math.PI * 2) };
+};
+
+
+ED.LacrimalDuct.prototype.setPropertyDefaults = function () {
+    this.isSaveable = false;
+    this.isMoveable = false;
+    this.isRotatable = false;
+    this.isScaleable = false;
+    this.isUnique = false;
+    this.isDeletable = false;
+    this.originX = 0;
+    this.originY = 0;
+
+    this.parameterValidationArray.lacrimalChildName = {
+        kind: 'other',
+        type: 'string',
+        list: ['horizontalDuct', 'upperDuct', 'lowerDuct'],
+        animate: false
+    };
+    this.parameterValidationArray.flowType = {
+        kind: 'other',
+        type: 'string',
+        list: ['patent', 'partial flow', 'blocked'],
+        animate: false
+    };
+    this.parameterValidationArray.flowPct = {
+        kind: 'other',
+        type: 'int',
+        range: new ED.Range(0, 100),
+        animate: false
+    };
+    this.parameterValidationArray.flowPosition = {
+        kind: 'other',
+        type: 'int',
+        range: new ED.Range(0, 100),
+        animate: false
+    };
+    this.parameterValidationArray.flowDirection = {
+        kind: 'other',
+        type: 'int',
+        range: new ED.Range(-1, 1),
+        animate: false
+    };
+    this.parameterValidationArray.blockagePosition = {
+        kind: 'other',
+        type: 'float',
+        range: new ED.Range(0, 1),
+        animate: false
+    };
+    this.parameterValidationArray.x1 = {
+        kind: 'derived',
+        type: 'int',
+        range: new ED.Range(-500, 500),
+        animate: false
+    };
+    this.parameterValidationArray.y1 = {
+        kind: 'derived',
+        type: 'int',
+        range: new ED.Range(-500, 500),
+        animate: false
+    };
+    this.parameterValidationArray.x2 = {
+        kind: 'derived',
+        type: 'int',
+        range: new ED.Range(-500, 500),
+        animate: false
+    };
+    this.parameterValidationArray.y2 = {
+        kind: 'derived',
+        type: 'int',
+        range: new ED.Range(-500, 500),
+        animate: false
+    };
+};
+
+ED.LacrimalDuct.prototype.setParameterDefaults = function () {
+    this.dir = this.drawing.eye == ED.eye.Right ? 1 : -1;
+
+    // Create a squiggle to store the handles points
+    var squiggle = new ED.Squiggle(this, new ED.Colour(100, 100, 100, 1), 4, true);
+
+    // Add it to squiggle array
+    this.squiggleArray.push(squiggle);
+
+    // Populate with handles on each lid
+    var point1 = new ED.Point(0, 0);
+    this.squiggleArray[0].pointsArray.push(point1);
+    var point2 = new ED.Point(0, 0);
+    this.squiggleArray[0].pointsArray.push(point2);
+};
+
+ED.LacrimalDuct.prototype.dependentParameterValues = function (_parameter, _value) {
+    let returnArray = {};
+
+    switch (_parameter) {
+        case 'flowType':
+            switch (_value) {
+                case 'patent':
+                    if (this.flowPct !== 100) {
+                        returnArray.flowPct = 100;
+                    }
+                    break;
+                case 'partial flow':
+                    if (this.flowPct === 0 || this.flowPct === 100) {
+                        returnArray.flowPct = 50;
+                    }
+                    break;
+                case 'blocked':
+                    if (this.flowPct !== 0) {
+                        returnArray.flowPct = 0;
+                    }
+                    break;
+            }
+            break;
+        case 'flowPct':
+            if (_value === 100) {
+                returnArray.flowType = 'patent';
+            }
+            else if (_value === 0) {
+                returnArray.flowType = 'blocked';
+            }
+            else if (_value > 0 && _value < 100) {
+                returnArray.flowType = 'partial flow';
+            }
+            break;
+    }
+    this.drawing.updateBindings();
+    return returnArray;
+};
+
+ED.LacrimalDuct.prototype.draw = function (_point) {
+    // Get context
+    var ctx = this.drawing.context;
+
+    // Call draw method in superclass
+    ED.LacrimalDuct.superclass.draw.call(this, _point);
+
+    if (this.loaded) {
+        // draw the main line
+        ctx.beginPath();
+        ctx.strokeStyle = "rgba(0,0,209,0)";
+        ctx.fillStyle = this.isSelected ? "rgba(150,0,0,.1)" : "rgba(100,100,100,0)";
+        ctx.lineWidth = 1;
+        this.drawRectangle(ctx, 0, 0, this.xl, this.yl, 55);
+        ctx.closePath();
+
+        //draw text
+        let textDist = this.y2 < this.y1 ? 120 : -90;
+        let p1 = MathHelper.perpendicularToLine(0, 0, this.xl, this.yl, this.xl / 2, this.yl / 2, textDist);
+
+        this.putText(ctx, p1.x, p1.y, this.flowPct + '%');
+
+        // Draw boundary path (also hit testing)
+        this.drawBoundary(_point);
+
+        let newPositions = [];
+        // make the handle slide along the bar
+        currHandle = 0;
+        newPositions[this.flowHandle] = new ED.Point(this.squiggleArray[0].pointsArray[this.flowHandle].x, this.squiggleArray[0].pointsArray[this.flowHandle].y);
+        if (this.x2 - this.x1 > this.y2 - this.y1) {
+            newPositions[this.flowHandle].x = newPositions[this.flowHandle].x < 0 ? 0 : newPositions[this.flowHandle].x;
+            newPositions[this.flowHandle].x = newPositions[this.flowHandle].x > this.xl ? this.xl : newPositions[this.flowHandle].x;
+            newPositions[this.flowHandle].y = newPositions[this.flowHandle].x / this.xl * this.yl;
+        }
+        else { // steep slope
+            newPositions[this.flowHandle].y = newPositions[this.flowHandle].y < 0 ? 0 : newPositions[this.flowHandle].y;
+            newPositions[this.flowHandle].y = newPositions[this.flowHandle].y > this.yl ? this.yl : newPositions[this.flowHandle].y;
+            newPositions[this.flowHandle].x = newPositions[this.flowHandle].y / this.yl * this.xl;
+        }
+
+        this.handleArray[this.flowHandle].location = this.transform.transformPoint(newPositions[this.flowHandle]);
+        this.setSimpleParameter('flowPosition', Math.round(newPositions[this.flowHandle].x / (this.x2 - this.x1) * 100));
+
+        // which way the triangle will point
+        let newDirection;
+        if (this.handleArray[this.flowHandle].location.x > this.prevFlowHandleX) {
+            newDirection = -1;
+        }
+        else if (this.handleArray[this.flowHandle].location.x < this.prevFlowHandleX) {
+            newDirection = 1;
+        }
+        this.prevFlowHandleX = this.handleArray[this.flowHandle].location.x;
+        if (newDirection && this.flowDirection !== newDirection) {
+            this.setSimpleParameter('flowDirection', newDirection);
+        }
+
+        switch (this.flowType) {
+            case 'patent':
+                this.handleArray[this.flowHandle].isVisible = true;
+                this.drawTriangle(ctx, newPositions[this.flowHandle].x, newPositions[this.flowHandle].y);
+                break;
+            case 'partial flow':
+                this.handleArray[this.flowHandle].isVisible = true;
+                let t0 = new Turtle({ x: newPositions[this.flowHandle].x, y: newPositions[this.flowHandle].y, vx: this.x2 - this.x1, vy: this.y2 - this.y1 });
+                let p1 = t0.move(-40 * this.flowDirection).getPoint();
+                let p2 = t0.move(80 * this.flowDirection).getPoint();
+                this.drawTriangle(ctx, p1.x, p1.y, -1);
+                this.drawBlockage(ctx, p2.x, p2.y);
+                break;
+            case 'blocked':
+                this.handleArray[this.flowHandle].isVisible = true;
+                this.drawBlockage(ctx, newPositions[this.flowHandle].x, newPositions[this.flowHandle].y);
+                if (this.lacrimalChildName === 'upperDuct') {
+                    break;
+                }
+        }
+    }
+
+    if (this.isSelected && !this.isForDrawing) {
+        this.drawHandles(_point);
+    }
+    // Return value indicating successful hittest
+    return this.isClicked;
+
+};
+
+ED.LacrimalDuct.prototype.putText = function (ctx, x, y, text) {
+    ctx.font = "50px Arial";
+    ctx.textAlign = 'center';
+    ctx.save();
+    ctx.fillStyle = "rgba(0,0,0,1)";
+
+    let dir = 1;
+    if (this.drawing.isFlipped) {
+        dir = -1;
+    }
+    ctx.scale(dir, 1);
+    ctx.fillText(this.flowPct + '%', x * dir, y);
+    ctx.restore();
+};
+
+ED.LacrimalDuct.prototype.drawRectangle = function (ctx, x1, y1, x2, y2, width) {
+    let p1 = MathHelper.perpendicularToLine(x1, y1, x2, y2, x1, y1, width / 2);
+    let p2 = MathHelper.perpendicularToLine(x1, y1, x2, y2, x1, y1, -width / 2);
+    let p3 = MathHelper.perpendicularToLine(x1, y1, x2, y2, x2, y2, -width / 2);
+    let p4 = MathHelper.perpendicularToLine(x1, y1, x2, y2, x2, y2, width / 2);
+    ctx.moveTo(p1.x, p1.y);
+    ctx.lineTo(p2.x, p2.y);
+    ctx.lineTo(p3.x, p3.y);
+    ctx.lineTo(p4.x, p4.y);
+    ctx.lineTo(p1.x, p1.y);
+    ctx.fill();
+};
+
+ED.LacrimalDuct.prototype.drawTriangle = function (ctx, x, y, direction, strokeStyle) {
+
+    let dir = this.drawing.isFlipped ? this.flowDirection : -this.flowDirection;
+    let len = 35 * dir;
+    let t0 = new Turtle({ x: x, y: y, vx: this.x2 - this.x1, vy: this.y2 - this.y1 });
+    let p3 = t0.move(len * 2).getPoint();
+    let p1 = t0.move(-len * 3).turnLeft().move(len).getPoint();
+    let p2 = t0.move(-len * 2).getPoint();
+
+    ctx.beginPath();
+    ctx.moveTo(p1.x, p1.y);
+    ctx.lineTo(p2.x, p2.y);
+    ctx.lineTo(p3.x, p3.y);
+    ctx.lineTo(p1.x, p1.y);
+    ctx.closePath();
+
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = strokeStyle || "rgba(0,150,0,1)";
+    ctx.fillStyle = ctx.strokeStyle;
+    ctx.fill();
+};
+
+ED.LacrimalDuct.prototype.drawBlockage = function (ctx, x, y) {
+    let lineAngle = Math.atan((this.x2 - this.x1) / (this.y2 - this.y1));
+
+    let len1 = 10;
+    let width = 50;
+    let p1 = MathHelper.perpendicularToLine(this.x1, this.y1, this.x2, this.y2, x - len1 * Math.sin(lineAngle), y - len1 * Math.cos(lineAngle), width);
+    let p2 = MathHelper.perpendicularToLine(this.x1, this.y1, this.x2, this.y2, x - len1 * Math.sin(lineAngle), y - len1 * Math.cos(lineAngle), -width);
+    let p3 = MathHelper.perpendicularToLine(this.x1, this.y1, this.x2, this.y2, x + len1 * Math.sin(lineAngle), y + len1 * Math.cos(lineAngle), width);
+    let p4 = MathHelper.perpendicularToLine(this.x1, this.y1, this.x2, this.y2, x + len1 * Math.sin(lineAngle), y + len1 * Math.cos(lineAngle), -width);
+
+    ctx.beginPath();
+    ctx.moveTo(p1.x, p1.y);
+    ctx.lineTo(p2.x, p2.y);
+    ctx.moveTo(p4.x, p4.y);
+    ctx.lineTo(p3.x, p3.y);
+    ctx.closePath();
+
+    ctx.lineWidth = 15;
+    ctx.strokeStyle = "rgba(150,0,0,1)";
+    ctx.fillStyle = ctx.strokeStyle;
+    ctx.stroke();
+};
+
+ED.LacrimalPunctum = function (_drawing, _parameterJSON) {
+    this.className = "LacrimalPunctum";
+
+    this.flowType = 'patent';
+    this.savedParameterArray = ['flowType', 'x1', 'x2', 'y1', 'y2']; //, 'isLower'];
+    this.controlParameterArray = { 'flowType': 'flow' };
+
+    // Call superclass constructor
+    ED.Doodle.call(this, _drawing, _parameterJSON);
+    if (_parameterJSON) { // doodle is loaded, connect with Lacrimal
+        this.lacrimalDoodle = this.drawing.firstDoodleOfClass('Lacrimal');
+    }
+    this.drawing.registerForNotifications(this, 'onReady', 'ready');
+};
+
+/**
+ * Sets superclass and constructor
+ */
+ED.LacrimalPunctum.prototype = new ED.Doodle;
+ED.LacrimalPunctum.prototype.constructor = ED.LacrimalPunctum;
+ED.LacrimalPunctum.superclass = ED.Doodle.prototype;
+
+ED.LacrimalPunctum.prototype.onReady = function () { // x,y is not set before for some freason
+    if (this.lacrimalChildName !== 'lowerPunctum') {
+        this.parameterValidationArray.flowType.list = this.parameterValidationArray.flowType.list.filter(e => e !== 'everted');
+    }
+};
+
+ED.LacrimalPunctum.prototype.setPropertyDefaults = function () {
+    this.isSaveable = false;
+    this.isMoveable = false;
+    this.isRotatable = false;
+    this.isScaleable = false;
+    this.isUnique = false;
+    this.isDeletable = false;
+
+    this.parameterValidationArray.lacrimalChildName = {
+        kind: 'other',
+        type: 'string',
+        list: ['upperPunctum', 'lowerPunctum'],
+        animate: false
+    }; this.parameterValidationArray.flowType = {
+        kind: 'other',
+        type: 'string',
+        list: ['blocked', 'stenosed', 'patent', 'everted'],
+        animate: false
+    };
+    this.parameterValidationArray.x1 = {
+        kind: 'derived',
+        type: 'int',
+        range: new ED.Range(-500, 500),
+        animate: false
+    };
+    this.parameterValidationArray.y1 = {
+        kind: 'derived',
+        type: 'int',
+        range: new ED.Range(-500, 500),
+        animate: false
+    };
+    this.parameterValidationArray.x2 = {
+        kind: 'derived',
+        type: 'int',
+        range: new ED.Range(-500, 500),
+        animate: false
+    };
+    this.parameterValidationArray.y2 = {
+        kind: 'derived',
+        type: 'int',
+        range: new ED.Range(-500, 500),
+        animate: false
+    };
+};
+
+ED.LacrimalPunctum.prototype.draw = function (_point) {
+    // Get context
+    var ctx = this.drawing.context;
+    // Call draw method in superclass
+    ED.LacrimalDuct.superclass.draw.call(this, _point);
+
+    // draw the main line
+    ctx.beginPath();
+    ctx.strokeStyle = "rgba(0,0,0,1)";
+    ctx.fillStyle = "rgba(0,0,0,1)";
+    ctx.lineWidth = 20;
+    let len, t0, p1, p2, p3, p4;
+    switch (this.flowType) {
+        case 'patent':
+            ctx.moveTo(this.x1, this.y1);
+            ctx.lineTo(this.x2, this.y2);
+            break;
+        case 'stenosed':
+            len = 25;
+            t0 = new Turtle({ x: this.x1, y: this.y1, vx: this.x2 - this.x1, vy: this.y2 - this.y1 });
+            p3 = t0.move(len * 2.8).getPoint();
+            p1 = t0.move(-len * 3).turnLeft().move(len).getPoint();
+            p2 = t0.move(-len * 2).getPoint();
+
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.lineTo(p3.x, p3.y);
+            ctx.lineTo(p1.x, p1.y);
+
+            ctx.lineWidth = 1;
+            ctx.fill();
+            break;
+        case 'blocked':
+            // draw original black lines
+            ctx.moveTo(this.x1, this.y1);
+            ctx.lineTo(this.x2, this.y2);
+            ctx.stroke();
+
+            // draw red X
+            len = 100;
+            t0 = new Turtle({ x: this.x1, y: this.y1, vx: this.x2 - this.x1, vy: this.y2 - this.y1 });
+            p1 = t0.move(40).turn(45).move(len / 2).getPoint();
+            p2 = t0.move(-len).getPoint();
+            t0 = new Turtle({ x: this.x1, y: this.y1, vx: this.x2 - this.x1, vy: this.y2 - this.y1 });
+            p3 = t0.move(40).turn(-45).move(len / 2).getPoint();
+            p4 = t0.move(-len).getPoint();
+
+            ctx.beginPath()
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.moveTo(p3.x, p3.y);
+            ctx.lineTo(p4.x, p4.y);
+            ctx.strokeStyle = "rgba(150,0,0,1)";
+            ctx.fillStyle = "rgba(150,0,0,1)";
+            ctx.lineWidth = 15;
+            break;
+        case 'everted':
+            len = 60;
+            ctx.moveTo(this.x1, this.y1);
+            t0 = new Turtle({ x: this.x1 + (this.x2 - this.x1) * 0.75, y: this.y1 + (this.y2 - this.y1) * 0.75, vx: this.x2 - this.x1, vy: this.y2 - this.y1 });
+            p1 = t0.getPoint();
+            ctx.lineTo(p1.x, p1.y);
+            p2 = t0.turnLeft().move(len).getPoint();
+            t0 = new Turtle({ x: this.x1 + (this.x2 - this.x1) * 0.75, y: this.y1 + (this.y2 - this.y1) * 0.75, vx: this.x2 - this.x1, vy: this.y2 - this.y1 });
+            let cp = t0.turnLeft().move(len / 2).turnRight().move(30).getPoint();
+            ctx.quadraticCurveTo(cp.x, cp.y, p2.x, p2.y);
+            break;
+    }
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.strokeStyle = "rgba(0,0,209,0)";
+    ctx.fillStyle = this.isSelected ? "rgba(150,0,0,.1)" : "rgba(100,100,100,0)";
+    ctx.lineWidth = 1;
+    ED.LacrimalDuct.prototype.drawRectangle(ctx, this.x1, this.y1, this.x2, this.y2, 55);
+    ctx.closePath();
+
+    // Draw boundary path (also hit testing)
+    this.drawBoundary(_point);
+
+    if (this.isSelected && !this.isForDrawing) {
+        this.drawHandles(_point);
+    }
+
+    // Return value indicating successful hittest
+    return this.isClicked;
+};
+
+/**
+ * OpenEyes
+ *
+ * Copyright (C) OpenEyes Foundation, 2011-2017
+ * This file is part of OpenEyes.
+ * OpenEyes is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * OpenEyes is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+ * You should have received a copy of the GNU Affero General Public License along with OpenEyes in a file titled COPYING. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @package OpenEyes
+ * @link http://www.openeyes.org.uk
+ * @author OpenEyes <info@openeyes.org.uk>
+ * @copyright Copyright 2011-2017, OpenEyes Foundation
+ * @license http://www.gnu.org/licenses/agpl-3.0.html The GNU Affero General Public License V3.0
+ */
+
+/**
  * Laser circle
  *
  * @class LaserCircle
@@ -44898,6 +45763,235 @@ ED.LensCrossSection.prototype.description = function() {
 
 	return returnString;
 }
+
+/**
+ * OpenEyes
+ *
+ * Copyright (C) OpenEyes Foundation, 2011-2017
+ * This file is part of OpenEyes.
+ * OpenEyes is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * OpenEyes is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+ * You should have received a copy of the GNU Affero General Public License along with OpenEyes in a file titled COPYING. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @package OpenEyes
+ * @link http://www.openeyes.org.uk
+ * @author OpenEyes <info@openeyes.org.uk>
+ * @copyright Copyright 2011-2017, OpenEyes Foundation
+ * @license http://www.gnu.org/licenses/agpl-3.0.html The GNU Affero General Public License V3.0
+ */
+
+
+/**
+ * LidLaxity
+ *
+ * @class LidLaxity
+ * @property {String} className Name of doodle subclass
+ * @param {Drawing} _drawing
+ * @param {Object} _parameterJSON
+ */
+ED.LidLaxity = function (_drawing, _parameterJSON) {
+    // Set classname
+    this.className = "LidLaxity";
+
+    // Saved parameters
+    this.savedParameterArray = ['center', 'size'];
+
+    // Call superclass constructor
+    ED.Doodle.call(this, _drawing, _parameterJSON);
+};
+
+/**
+ * Sets superclass and constructor
+ */
+ED.LidLaxity.prototype = new ED.Doodle;
+ED.LidLaxity.prototype.constructor = ED.LidLaxity;
+ED.LidLaxity.superclass = ED.Doodle.prototype;
+
+/**
+ * Sets handle attributes
+ */
+ED.LidLaxity.prototype.setHandles = function () {
+    this.handleArray[0] = new ED.Doodle.Handle(null, true, ED.Mode.Move, false);
+    this.handleArray[1] = new ED.Doodle.Handle(null, true, ED.Mode.Apex, false);
+};
+
+/**
+ * Sets default dragging attributes
+ */
+ED.LidLaxity.prototype.setPropertyDefaults = function () {
+    this.isMoveable = true;
+    this.isRotatable = false;
+    this.isUnique = true;
+    this.size = 0.4;
+    this.center = 0.5;
+
+    this.parameterValidationArray.center = {
+        kind: 'derived',
+        type: 'int',
+        range: new ED.Range(-500, 500),
+        animate: false
+    };
+    this.parameterValidationArray.size = {
+        kind: 'derived',
+        type: 'int',
+        range: new ED.Range(-500, 500),
+        animate: false
+    };
+};
+
+ED.LidLaxity.prototype.draw = function (_point) {
+
+    let LacrimalDoodle = this.drawing.firstDoodleOfClass('Lacrimal');
+    let lidParams = LacrimalDoodle.getLidCurveParams();
+    let lidLength = lidParams.endPoint.x - lidParams.startPoint.x;
+
+    // this.parameterValidationArray.apexX.range.setMinAndMax(20, lidLength);
+
+    if (!this.initialized) { // first run, set originX from this.center
+        this.initialized = true;
+        this.originX = this.center * lidLength + lidParams.startPoint.x;
+    }
+
+    if (this.rightEye === 1) {
+        this.parameterValidationArray.originX.range.setMinAndMax(lidParams.startPoint.x + lidLength * this.size / 2, lidParams.endPoint.x - lidLength * this.size / 2);
+    }
+    else {
+        this.parameterValidationArray.originX.range.setMinAndMax(-lidParams.endPoint.x + lidLength * this.size / 2, -lidParams.startPoint.x - lidLength * this.size / 2);
+    }
+
+    // this.center is derived after the first run
+    this.center = (this.originX - lidParams.startPoint.x) / lidLength;
+
+    this.originY = 0;
+
+    // Get context
+    var ctx = this.drawing.context;
+
+    // Call draw method in superclass
+    ED.LidLaxity.superclass.draw.call(this, _point);
+
+    ctx.beginPath();
+
+    // draw the laxity
+    let bezPoint = MathHelper.calculateBezierPoints(this.center - this.size / 2, lidParams.startPoint, lidParams.endPoint, lidParams.controlPoint1, lidParams.controlPoint2);
+
+    ctx.moveTo(bezPoint.x - this.originX, bezPoint.y);
+
+    let sgn = 1;
+    for (let t = this.center - this.size / 2; t <= this.center + this.size / 2; t += 0.025) {
+        let lastPoint = bezPoint;
+        bezPoint = MathHelper.calculateBezierPoints(t, lidParams.startPoint, lidParams.endPoint, lidParams.controlPoint1, lidParams.controlPoint2);
+        let t0 = new Turtle({ x: bezPoint.x, y: bezPoint.y, vx: lastPoint.x - bezPoint.x, vy: lastPoint.y - bezPoint.y });
+        let controlPoint = t0.move(Math.abs(bezPoint.x - lastPoint.x) / 2).turnLeft().move(10 * sgn).getPoint();
+        ctx.lineTo(controlPoint.x - this.originX, controlPoint.y);
+        ctx.lineTo(bezPoint.x - this.originX, bezPoint.y);
+        sgn *= -1;
+    }
+
+    ctx.strokeStyle = "rgba(200,0,0,1)";
+    ctx.fillStyle = "rgba(0,0,0,0)";
+    ctx.lineWidth = 5;
+
+    // Draw boundary path (also hit testing)
+    this.drawBoundary(_point);
+
+    // calculate points for handles
+    let centerPoint = MathHelper.calculateBezierPoints(this.center, lidParams.startPoint, lidParams.endPoint, lidParams.controlPoint1, lidParams.controlPoint2);
+
+    let sidePoint = MathHelper.calculateBezierPoints(this.center + this.size / 2, lidParams.startPoint, lidParams.endPoint, lidParams.controlPoint1, lidParams.controlPoint2);
+    if (this.handleArray[1].location.x === 0 && this.handleArray[1].location.y === 0) { // initial setting
+        this.apexX = this.size * lidLength;
+    }
+    else {
+        this.size = this.apexX / lidLength;
+    }
+
+    // constraining apexX
+    if (this.apexX > lidLength) {
+        this.apexX = lidLength;
+    }
+    this.parameterValidationArray.apexX.range.setMinAndMax(20, lidLength); // it's not redundant, needed to avoid bumpiness
+
+    // constaring originX
+    if (this.originX < lidParams.startPoint.x + lidLength * this.size / 2) {
+        this.originX = lidParams.startPoint.x + lidLength * this.size / 2;
+    }
+    else if (this.originX > lidParams.endPoint.x - lidLength * this.size / 2) {
+        this.originX = lidParams.endPoint.x - lidLength * this.size / 2;
+    }
+    this.parameterValidationArray.originX.range.setMinAndMax(lidParams.startPoint.x + lidLength * this.size / 2, lidParams.endPoint.x - lidLength * this.size / 2); // it's not redundant, needed to avoid bumpiness
+
+    this.handleArray[0].location = this.transform.transformPoint({ x: 0, y: centerPoint.y });
+    this.handleArray[1].location = this.transform.transformPoint({ x: sidePoint.x - this.originX, y: sidePoint.y });
+
+    if (this.isSelected && !this.isForDrawing) {
+        this.drawHandles(_point);
+    }
+
+    // Return value indicating successful hittest
+    return this.isClicked;
+};
+
+/**
+ * Returns a string containing a text description of the doodle
+ *
+ * @returns {String} Description of doodle
+ */
+ED.LidLaxity.prototype.description = function () {
+
+    let lateralBound = 0.25;
+    let medialBound = 0.75;
+    let isCentral = false;
+    let isMedial = false;
+    let isLateral = false;
+    if (this.center - this.size / 2 < lateralBound) {
+        isLateral = true;
+    }
+    else if (this.center - this.size / 2 < medialBound) {
+        isCentral = true;
+    }
+    else {
+        isMedial = true;
+    }
+
+    if (this.center + this.size / 2 > medialBound) {
+        isMedial = true;
+    }
+    else if (this.center + this.size / 2 > lateralBound) {
+        isCentral = true;
+    }
+    else {
+        isLateral = true;
+    }
+
+    if (isMedial && isLateral) {
+        isCentral = true;
+    }
+
+    let description = '';
+    if (isLateral) {
+        description += 'lateral, ';
+    }
+    if (isCentral) {
+        description += 'central, ';
+    }
+    if (isMedial) {
+        description += 'medial, ';
+    }
+
+    description = description.charAt(0).toUpperCase() + description.slice(1, description.length - 2) + ' lid laxity. ';
+    return description;
+};
+
+/**
+ * Returns the SnoMed code of the doodle
+ *
+ * @returns {number} SnoMed code of entity represented by doodle
+ */
+// ED.LidLaxity.prototype.snomedCode = function () {
+//     'use strict';
+//     return -1;
+// };
 
 /**
  * OpenEyes
@@ -47358,6 +48452,150 @@ ED.Microaneurysm.prototype.draw = function(_point) {
 ED.Microaneurysm.prototype.groupDescription = function() {
 	return "Microaneurysms";
 }
+
+/**
+ * OpenEyes
+ *
+ * Copyright (C) OpenEyes Foundation, 2011-2017
+ * This file is part of OpenEyes.
+ * OpenEyes is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * OpenEyes is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+ * You should have received a copy of the GNU Affero General Public License along with OpenEyes in a file titled COPYING. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @package OpenEyes
+ * @link http://www.openeyes.org.uk
+ * @author OpenEyes <info@openeyes.org.uk>
+ * @copyright Copyright 2011-2017, OpenEyes Foundation
+ * @license http://www.gnu.org/licenses/agpl-3.0.html The GNU Affero General Public License V3.0
+ */
+
+/**
+ * Mucocele
+ *
+ * @class Mucocele
+ * @property {String} className Name of doodle subclass
+ * @param {Drawing} _drawing
+ * @param {Object} _parameterJSON
+ */
+ED.Mucocele = function (_drawing, _parameterJSON) {
+    // Set classname
+    this.className = "Mucocele";
+
+    // Saved parameters
+    this.savedParameterArray = ['originX', 'originY', 'scaleX', 'scaleY', 'inflamed'];
+
+    // Parameters in doodle control bar (parameter name: parameter label)
+    this.controlParameterArray = { 'inflamed': 'inflamed' };
+
+    this.inflamed = false;
+
+    // Call superclass constructor
+    ED.Doodle.call(this, _drawing, _parameterJSON);
+
+    this.rightEye = 1;
+    this.originX = 430 * this.rightEye;
+    this.originY = 150;
+};
+
+/**
+ * Sets superclass and constructor
+ */
+ED.Mucocele.prototype = new ED.Doodle;
+ED.Mucocele.prototype.constructor = ED.Mucocele;
+ED.Mucocele.superclass = ED.Doodle.prototype;
+
+/**
+ * Sets handle attributes
+ */
+ED.Mucocele.prototype.setHandles = function () {
+    this.handleArray[2] = new ED.Doodle.Handle(null, true, ED.Mode.Scale, false);
+};
+
+/**
+ * Sets default dragging attributes
+ */
+ED.Mucocele.prototype.setPropertyDefaults = function () {
+    this.isMoveable = false;
+    this.isSqueezable = true;
+    this.isRotatable = false;
+    this.isUnique = true;
+
+    this.parameterValidationArray['scaleX']['range'].setMinAndMax(+0.25, +1.5);
+    this.parameterValidationArray['scaleY']['range'].setMinAndMax(+0.25, +1.5);
+
+    // Add complete validation arrays for derived parameters
+    this.parameterValidationArray['inflamed'] = {
+        kind: 'derived',
+        type: 'bool',
+        display: true
+    };
+};
+
+/**
+ * Sets default parameters
+ */
+ED.Mucocele.prototype.setParameterDefaults = function () {};
+
+/**
+ * Draws doodle or performs a hit test if a Point parameter is passed
+ *
+ * @param {Point} _point Optional point in canvas plane, passed if performing hit test
+ */
+ED.Mucocele.prototype.draw = function (_point) {
+    // Get context
+    var ctx = this.drawing.context;
+
+    // Call draw method in superclass
+    ED.Mucocele.superclass.draw.call(this, _point);
+
+    // Boundary path
+    ctx.beginPath();
+
+    // Mucocele
+    var r = 90;
+    ctx.arc(0, 0, r, Math.PI * 1.5, Math.PI * .5, true);
+
+    // Close path
+    ctx.closePath();
+
+    // Properties
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = "rgba(100, 100, 100, 1)";
+    ctx.fillStyle = this.inflamed ? "rgba(255, 0, 0, 1)" : "rgba(150, 150, 150, 1)";
+
+    // Draw boundary path (also hit testing)
+    this.drawBoundary(_point);
+
+    // Coordinates of handles (in canvas plane)
+    var point = new ED.Point(0, 0);
+    point.setWithPolars(r, -Math.PI / 4);
+    this.handleArray[2].location = this.transform.transformPoint(point);
+
+    // Draw handles if selected
+    if (this.isSelected && !this.isForDrawing) {
+        this.drawHandles(_point);
+    }
+
+    // Return value indicating successful hittest
+    return this.isClicked;
+};
+
+/**
+ * Returns a string containing a text description of the doodle
+ *
+ * @returns {String} Description of doodle
+ */
+ED.Mucocele.prototype.description = function () {
+
+    let returnValue = "";
+    if (this.inflamed) {
+        returnValue += "inflamed ";
+    }
+    returnValue += "mucocele. ";
+    returnValue = returnValue.charAt(0).toUpperCase() + returnValue.slice(1); // capitalize first letter
+
+    return returnValue;
+};
 
 /**
  * OpenEyes
@@ -56062,6 +57300,14 @@ ED.RetinoscopyPowerCross.prototype.calcRx = function() {
 	// cannot be negative
 	if (angle < 0)
 		angle += 180;
+
+
+	if (this.angle1 == 180 && power1 >= power2)
+		angle = 180;
+
+
+	if (this.angle2 == 180 && power2 > power1)
+		angle = 180;
 
 	return {
 		pSphere: pSphere,
