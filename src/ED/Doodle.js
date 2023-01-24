@@ -326,7 +326,7 @@ ED.Doodle = function(_drawing, _parameterJSON) {
 						for (var k = 0; k < pointsArray.length; k++) {
 							var point = undefined;
 							if (!isNaN(parseFloat(pointsArray[k].x)) && !isNaN(parseFloat(pointsArray[k].y))) {
-                                point = new ED.Point(pointsArray[k].x, pointsArray[k].y);
+								point = new ED.Point(pointsArray[k].x, pointsArray[k].y);
 							}
 							squiggle.addPoint(point);
 						}
@@ -473,6 +473,17 @@ ED.Doodle.prototype.move = function (_x, _y) {
 		// Enforce bounds
 		var newOriginX = this.parameterValidationArray['originX']['range'].constrain(this.originX + x, this.scaleLevel);
 		var newOriginY = this.parameterValidationArray['originY']['range'].constrain(this.originY + y, this.scaleLevel);
+
+		// if bound have been set as radius
+		let circularRange = this.parameterValidationArray['originX']['circularRange'] || this.parameterValidationArray['originY']['circularRange'];
+		if (circularRange) {
+			let tempPoint = new ED.Point(newOriginX, newOriginY);
+			if (tempPoint.length() > circularRange) {
+				tempPoint.setWithPolars(circularRange, tempPoint.direction());
+				newOriginX = tempPoint.x;
+				newOriginY = tempPoint.y;
+			}
+		}
 
 		// Move doodle to new position
 		if (x !== 0) {
@@ -683,7 +694,7 @@ ED.Doodle.prototype.drawBoundary = function(_point, mode) {
 	else {
 		// Specify highlight attributes
 		if (this.isSelected && this.isShowHighlight) {
-            ctx.shadowColor = "gray";
+			ctx.shadowColor = "gray";
 			ctx.shadowOffsetX = 0;
 			ctx.shadowOffsetY = 0;
 			ctx.shadowBlur = 20;
@@ -1182,9 +1193,9 @@ ED.Doodle.prototype.parameterElement = function(_parameter, showLabel) {
 		case 'bool':
 			// Create a checkbox element
 			element = document.createElement('input');
-    		element.type = 'checkbox';
-    		element.setAttribute('id', this.parameterControlElementId(_parameter));
-    		break;
+			element.type = 'checkbox';
+			element.setAttribute('id', this.parameterControlElementId(_parameter));
+			break;
 
 		case 'colourString':
 			// Create a colour picker
@@ -1224,36 +1235,36 @@ ED.Doodle.prototype.parameterElement = function(_parameter, showLabel) {
 				option.value = this.parameterValidationArray[_parameter].list[i];
 				element.appendChild(option);
 			}
-    		break;
+			break;
 
 		case 'float':
 			// Create a text input element
 			element = document.createElement('input');
-    		element.type = 'text';
-    		element.setAttribute('id', this.parameterControlElementId(_parameter));
-    		break;
+			element.type = 'text';
+			element.setAttribute('id', this.parameterControlElementId(_parameter));
+			break;
 
 		case 'int':
 			// Create a text input element
 			element = document.createElement('input');
-    		element.type = 'text';
-    		element.setAttribute('id', this.parameterControlElementId(_parameter));
-    		break;
+			element.type = 'text';
+			element.setAttribute('id', this.parameterControlElementId(_parameter));
+			break;
 
 		case 'mod':
 			// Create a text input element
 			element = document.createElement('input');
-    		element.type = 'text';
-    		element.setAttribute('id', this.parameterControlElementId(_parameter));
-    		break;
+			element.type = 'text';
+			element.setAttribute('id', this.parameterControlElementId(_parameter));
+			break;
 
 		case 'freeText':
 			// Create a text input element
 			element = document.createElement('input');
-    		element.type = 'text';
-    		element.classList.add("cols-full");
-    		element.setAttribute('id', this.parameterControlElementId(_parameter));
-    		break;
+			element.type = 'text';
+			element.classList.add("cols-full");
+			element.setAttribute('id', this.parameterControlElementId(_parameter));
+			break;
 
 // 		case 'radio':
 // 			// Create a radio button element
@@ -1274,6 +1285,12 @@ ED.Doodle.prototype.parameterElement = function(_parameter, showLabel) {
 		var label = document.createElement('label');
 		label.innerText = this.controlParameterArray[_parameter];
 		label.setAttribute('for', this.parameterControlElementId(_parameter));
+		if (label.innerText.length > 10 && element.type === 'text') {
+			div.classList.add('opt-stack');
+		}
+		if (label.innerText.length > 39 && element.type === 'checkbox') {
+			div.classList.add('opt-checkbox');
+		}
 		div.appendChild(label);
 	}
 	div.appendChild(element);
@@ -1297,60 +1314,60 @@ ED.Doodle.prototype.setParameterWithAnimation = function(_parameter, _value, _up
 	// Check for animation flag and for valid result
 	if (this.parameterValidationArray[_parameter]['animate'] && !ED.objectIsEmpty(valueArray)) {
 
-			// Animate parameters
-			for (var parameter in valueArray) {
-				// Read delta in units per frame
-				var delta = this.parameterValidationArray[parameter]['delta'];
+		// Animate parameters
+		for (var parameter in valueArray) {
+			// Read delta in units per frame
+			var delta = this.parameterValidationArray[parameter]['delta'];
 
-				// Calculate 'distance' to go
-				var distance = valueArray[parameter] - this[parameter];
+			// Calculate 'distance' to go
+			var distance = valueArray[parameter] - this[parameter];
 
-				// Calculate sign and apply to delta
-				if (parameter == 'rotation') {
-					// This formula works out correct distance and direction on a radians 'clock face' (ie the shortest way round)
-					var sign = ((Math.PI - Math.abs(distance)) * distance) < 0 ? -1 : 1;
-					distance = distance * sign;
+			// Calculate sign and apply to delta
+			if (parameter == 'rotation') {
+				// This formula works out correct distance and direction on a radians 'clock face' (ie the shortest way round)
+				var sign = ((Math.PI - Math.abs(distance)) * distance) < 0 ? -1 : 1;
+				distance = distance * sign;
 
-					// Make distance positive
-					if (distance < 0) distance += 2 * Math.PI;
+				// Make distance positive
+				if (distance < 0) distance += 2 * Math.PI;
 
-					// Test for roughly half way
-					if (distance > 3.141) {
-						if (this.rotation < Math.PI) sign = -sign;
-					}
-				} else {
-					var sign = distance < 0 ? -1 : 1;
+				// Test for roughly half way
+				if (distance > 3.141) {
+					if (this.rotation < Math.PI) sign = -sign;
 				}
-				delta = delta * sign;
-
-				// Calculate number of frames to animate
-				var frames = Math.abs(Math.floor(distance / delta));
-
-				// Put results into an associative array for this parameter
-				var array = {
-					timer: null,
-					delta: delta,
-					frames: frames,
-					frameCounter: 0
-				};
-				this.animationDataArray[parameter] = array;
-
-				// Call animation method
-				if (frames > 0) {
-					this.increment(parameter, valueArray[parameter], _updateBindings);
-				}
-				// Increment may be too small to animate, but still needs setting
-				else {
-					// Set  parameter to exact value
-					this.setSimpleParameter(parameter, valueArray[parameter]);
-
-					// Update dependencies
-					this.updateDependentParameters(parameter, _updateBindings);
-
-					// Refresh drawing
-					this.drawing.repaint();
-				}
+			} else {
+				var sign = distance < 0 ? -1 : 1;
 			}
+			delta = delta * sign;
+
+			// Calculate number of frames to animate
+			var frames = Math.abs(Math.floor(distance / delta));
+
+			// Put results into an associative array for this parameter
+			var array = {
+				timer: null,
+				delta: delta,
+				frames: frames,
+				frameCounter: 0
+			};
+			this.animationDataArray[parameter] = array;
+
+			// Call animation method
+			if (frames > 0) {
+				this.increment(parameter, valueArray[parameter], _updateBindings);
+			}
+			// Increment may be too small to animate, but still needs setting
+			else {
+				// Set  parameter to exact value
+				this.setSimpleParameter(parameter, valueArray[parameter]);
+
+				// Update dependencies
+				this.updateDependentParameters(parameter, _updateBindings);
+
+				// Refresh drawing
+				this.drawing.repaint();
+			}
+		}
 	}
 
 	// Otherwise just set value directly
@@ -1393,7 +1410,7 @@ ED.Doodle.prototype.setParameterFromString = function(_parameter, _value, _updat
 	// Check type of passed value variable
 	var type = typeof(_value);
 	if (type != 'string') {
-		ED.errorHandler('ED.Doodle', 'setParameterFromString', '_value parameter should be of type string, not ' + type + ' for parameter ' + _parameter);
+		ED.errorHandler('ED.Doodle', 'setParameterFromString', '_value parameter should be of type string, not ' + type);
 	}
 
 	// Retrieve validation object for this doodle
@@ -1427,7 +1444,7 @@ ED.Doodle.prototype.setParameterFromString = function(_parameter, _value, _updat
 				break;
 
 			case 'freeText':
-				this[_parameter] = encodeURI(_value).replace(/'/g, "%27");
+				this[_parameter] = _value;
 				break;
 
 			default:
@@ -1614,7 +1631,7 @@ ED.Doodle.prototype.getParameter = function(_parameter) {
 				break;
 
 			case 'freeText':
-				value = decodeURI(this[_parameter]);
+				value = this[_parameter];
 				break;
 
 			default:
@@ -1895,7 +1912,7 @@ ED.Doodle.prototype.degrees = function() {
  */
 ED.Doodle.prototype.clockHourExtent = function(label) {
 	if (label === undefined) {
-        label = '';
+		label = '';
 	} else {
 		label = ' ' + label;
 	}
@@ -2195,7 +2212,7 @@ ED.Doodle.prototype.json = function() {
 					case 'lastOriginX':
 					case 'lastOriginY':
 						o *= (1 / this.scaleLevel);
-					break;
+						break;
 				}
 
 				// Special treatment according to parameter
@@ -2208,7 +2225,7 @@ ED.Doodle.prototype.json = function() {
 				} else if (typeof(o) == 'number') {
 					o = o.toFixed(2);
 				} else if (typeof(o) == 'string') {
-          o = o.replace('<', '&lt;');
+					o = o.replace('<', '&lt;');
 					o = '"' + o + '"';
 				} else if (typeof(o) == 'boolean') {
 					o = o;
@@ -2401,15 +2418,15 @@ ED.Doodle.prototype.drawNFLHaem = function(_ctx, _x, _y) {
  * @param {Float} _h Height
  */
 ED.Doodle.prototype.addEllipseToPath = function(_ctx, _x, _y, _w, _h) {
-  var kappa = 0.5522848;
-  var ox = (_w / 2) * kappa;
-  var oy = (_h / 2) * kappa;
+	var kappa = 0.5522848;
+	var ox = (_w / 2) * kappa;
+	var oy = (_h / 2) * kappa;
 
-  _ctx.moveTo(-_w/2, 0);
-  _ctx.bezierCurveTo(_x - _w/2, _y - oy, _x - ox, _y - _h/2, _x, _y - _h/2);
-  _ctx.bezierCurveTo(_x + ox, _y - _h/2, _x + _w/2, _y - oy, _x + _w/2, _y);
-  _ctx.bezierCurveTo(_x + _w/2, _y + oy, _x + ox, _y + _h/2, _x, _y + _h/2);
-  _ctx.bezierCurveTo(_x - ox, _y + _h/2, _x - _w/2, _y + oy, _x - _w/2, _y);
+	_ctx.moveTo(-_w/2, 0);
+	_ctx.bezierCurveTo(_x - _w/2, _y - oy, _x - ox, _y - _h/2, _x, _y - _h/2);
+	_ctx.bezierCurveTo(_x + ox, _y - _h/2, _x + _w/2, _y - oy, _x + _w/2, _y);
+	_ctx.bezierCurveTo(_x + _w/2, _y + oy, _x + ox, _y + _h/2, _x, _y + _h/2);
+	_ctx.bezierCurveTo(_x - ox, _y + _h/2, _x - _w/2, _y + oy, _x - _w/2, _y);
 };
 
 /**

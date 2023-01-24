@@ -22,16 +22,25 @@
  * @param {Drawing} _drawing
  * @param {Object} _parameterJSON
  */
-ED.SPEE = function(_drawing, _parameterJSON) {
+ED.SPEE = function (_drawing, _parameterJSON) {
 	// Set classname
 	this.className = "SPEE";
 
 	// Saved parameters
-	this.savedParameterArray = ['originX', 'originY', 'apexY', 'apexX', 'scaleX','scaleY', 'rotation'];
+	this.savedParameterArray = ['originX', 'originY', 'apexY', 'apexX', 'scaleX', 'scaleY', 'rotation', 'configuration', 'previousConfiguration'];
+	this.configuration = 'Diffuse, moderate';
+	this.previousConfiguration = 'Diffuse, moderate';
+
+	this.controlParameterArray = { 'configuration': 'Set configuration' };
+
+	this.randomArray = new Array(20000); // we need a longer randomArray than ED.randomArray
+	for (let i = 0; i < this.randomArray.length; i++) {
+		this.randomArray[i] = Math.random();
+	}
 
 	// Call superclass constructor
 	ED.Doodle.call(this, _drawing, _parameterJSON);
-}
+};
 
 /**
  * Sets superclass and constructor
@@ -51,7 +60,7 @@ ED.SPEE.prototype.setHandles = function() {
 	// shape
 	this.handleArray[4] = new ED.Doodle.Handle(null, true, ED.Mode.Apex, false);
 	this.handleArray[4].isRotatable = true;
-}
+};
 
 /**
  * Sets default properties
@@ -62,41 +71,97 @@ ED.SPEE.prototype.setPropertyDefaults = function() {
 	// Update component of validation array for simple parameters
 	this.parameterValidationArray['apexX']['range'].setMinAndMax(-400, +400);
 	this.parameterValidationArray['apexY']['range'].setMinAndMax(-400, +400);
-	
-	
+
+	this.parameterValidationArray['configuration'] = {
+		kind: 'other',
+		type: 'string',
+		list: ['Lower 1/3 light', 'Lower 1/3 dense', 'Middle 1/3 light', 'Middle 1/3 dense', 'Diffuse, light', 'Diffuse, moderate', 'Diffuse, heavy'],
+		animate: false
+	};
+
 	this.handleVectorRangeArray = new Array();
 	var range = new Object;
-	range.length = new ED.Range(+1, +150);
-	range.angle = new ED.Range(0.5*Math.PI, 0.5*Math.PI);
+	range.length = new ED.Range(+20, +350);
+	range.angle = new ED.Range(0.5 * Math.PI, 0.5 * Math.PI);
 	this.handleVectorRangeArray[0] = range;
-}
+};
 
 /**
  * Sets default parameters
  */
 ED.SPEE.prototype.setParameterDefaults = function() {
-	this.originX = 150;
-	this.originY = 40;
-	this.apexY = -50;
-	this.apexX = 170;
-	
+	this.originX = 0;
+	this.originY = 0;
+	this.apexY = 370;
+	this.apexX = 370;
+
 	// Create a squiggle to store the handles points
 	var squiggle = new ED.Squiggle(this, new ED.Colour(100, 100, 100, 1), 4, true);
 
 	// Add it to squiggle array
 	this.squiggleArray.push(squiggle);
 
-	var point = new ED.Point(40, 0);
+	var point = new ED.Point(100, 0);
 	this.addPointToSquiggle(point);
+};
 
-}
+ED.SPEE.prototype.dependentParameterValues = function (_parameter, _value) {
+	var returnArray = [];
+
+	switch (_parameter) {
+		case 'configuration':
+			if (_value !== this.previousConfiguration) {
+
+				this.originX = 0;
+				this.originY = 0;
+				this.apexX = 370;
+				this.apexY = 370;
+
+				switch (_value) {
+					case 'Diffuse, moderate':
+						this.squiggleArray[0].pointsArray[0].x = 100;
+						break;
+					case 'Diffuse, light':
+						this.squiggleArray[0].pointsArray[0].x = 50;
+						break;
+					case 'Diffuse, heavy':
+						this.squiggleArray[0].pointsArray[0].x = 150;
+						break;
+					case 'Lower 1/3 light':
+						this.squiggleArray[0].pointsArray[0].x = 50;
+						this.originY = 220;
+						this.apexX = 300;
+						this.apexY = 125;
+						break;
+					case 'Lower 1/3 dense':
+						this.squiggleArray[0].pointsArray[0].x = 150;
+						this.originY = 220;
+						this.apexX = 300;
+						this.apexY = 125;
+						break;
+					case 'Middle 1/3 light':
+						this.squiggleArray[0].pointsArray[0].x = 50;
+						this.apexY = 100;
+						break;
+					case 'Middle 1/3 dense':
+						this.squiggleArray[0].pointsArray[0].x = 150;
+						this.apexY = 100;
+						break;
+				}
+				this.previousConfiguration = _value;
+			}
+			break;
+	}
+
+	return returnArray;
+};
 
 /**
  * Draws doodle or performs a hit test if a Point parameter is passed
  *
  * @param {Point} _point Optional point in canvas plane, passed if performing hit test
  */
-ED.SPEE.prototype.draw = function(_point) {
+ED.SPEE.prototype.draw = function (_point) {
 	// Get context
 	var ctx = this.drawing.context;
 
@@ -137,24 +202,21 @@ ED.SPEE.prototype.draw = function(_point) {
 		var A = Math.PI * Math.abs(this.apexX * this.apexY);
 		
 		// Calculate number of dots within boundary
-		var n = A / 250 * (pD / 30);
-		
-		var p = new ED.Point(0, 0);
+		let n = Math.ceil(A / 250 * (pD / 50));
+		if (n >= this.randomArray.length / 2) {
+			n = Math.round(this.randomArray.length / 2);
+		}
+
+		let p = new ED.Point(0, 0);
 		
 		// Calculate random positions for dots			
-		for (var i = 0; i < n; i++) {
-			var j = (i < 150) ? i : (i < 199) ? i - 50 : (i < 249) ? i - 100 : (i < 299) ? i - 150 : (i < 349) ? i - 200 : i - 250;
+		for (let i = 0; i < n; i++) {
+			let theta = this.randomArray[i] * 2 * Math.PI;
+			let r = this.randomArray[i + this.randomArray.length / 2] * 100;
+			p.setWithPolars(r, theta);
+			p.x *= this.apexX / 100;
+			p.y *= this.apexY / 100;
 
-			var k = (i < 200) ? i : (i < 398) ? (i - 199) : (i < 397) ? (i - 298) : (i - 396);
-
-			var r = Math.sqrt(n * ED.randomArray[k]);
-			var rX = this.apexX * ED.randomArray[k];
-			var rY = this.apexY * ED.randomArray[j];
-			var theta = 2 * Math.PI * ED.randomArray[j + 50];
-							
-			p.x = rX * Math.cos(theta*r);
-			p.y = rY * Math.sin(theta*r);
-			
 			// Draw dot
 			this.drawSpot(ctx, p.x, p.y, dr, fill);
 		}
@@ -166,6 +228,8 @@ ED.SPEE.prototype.draw = function(_point) {
 		this.drawSpot(ctx, -1 * Math.abs(this.apexX), 0, dr, fill);
 	}
 
+	this.parameterValidationArray['originX']['circularRange'] = 380 - Math.min(Math.abs(this.apexX), Math.abs(this.apexY));
+
 	// Coordinates of handles (in canvas plane)
 	this.handleArray[4].location = this.transform.transformPoint(new ED.Point(this.apexX, this.apexY));
 
@@ -174,7 +238,7 @@ ED.SPEE.prototype.draw = function(_point) {
 
 	// Return value indicating successful hittest
 	return this.isClicked;
-}
+};
 
 /**
  * Returns a string containing a text description of the doodle
@@ -183,4 +247,4 @@ ED.SPEE.prototype.draw = function(_point) {
  */
 ED.SPEE.prototype.groupDescription = function() {	
 	return "Superficial punctate epithelial erosions";
-}
+};

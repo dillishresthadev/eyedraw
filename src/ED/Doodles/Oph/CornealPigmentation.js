@@ -204,6 +204,8 @@ ED.CornealPigmentation.prototype.draw = function(_point) {
 	// Coordinates of handles (in canvas plane)
 	this.handleArray[4].location = this.transform.transformPoint(new ED.Point(this.apexX, this.apexY));
 
+	this.parameterValidationArray['originX']['circularRange'] = 380-Math.min(Math.abs(this.apexX), Math.abs(this.apexY));
+	
 	// Draw handles if selected
 	if (this.isSelected && !this.isForDrawing) this.drawHandles(_point);
 

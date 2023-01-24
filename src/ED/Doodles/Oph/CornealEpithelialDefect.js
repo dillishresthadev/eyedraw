@@ -83,10 +83,6 @@ ED.CornealEpithelialDefect.prototype.setPropertyDefaults = function() {
 		this.handleVectorRangeArray[i] = range;
 	}
 	
-	// Update component of validation array for simple parameters
-	this.parameterValidationArray['originX']['range'].setMinAndMax(-350, +350);
-	this.parameterValidationArray['originY']['range'].setMinAndMax(-350, +350);
-	
 	// Validation arrays for other parameters
 	this.parameterValidationArray['fHeight'] = {
 		kind: 'other',
@@ -254,6 +250,10 @@ ED.CornealEpithelialDefect.prototype.draw = function(_point) {
 	for (let i = 0; i < this.numberOfHandles /* * 2 */; i++) {
 		this.handleArray[i].location = this.transform.transformPoint(this.squiggleArray[0].pointsArray[i]);
 	}
+
+	const reducer = (min, currPoint) => Math.min(min, currPoint.length());
+	let minHandleDist = this.squiggleArray[0].pointsArray.reduce(reducer, this.squiggleArray[0].pointsArray[0].length());
+	this.parameterValidationArray['originX']['circularRange'] = 380 - minHandleDist;
 
 	// Non boundary drawing
 	if (this.drawFunctionMode == ED.drawFunctionMode.Draw) {

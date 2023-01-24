@@ -77,9 +77,6 @@ ED.KeraticPrecipitates.prototype.setPropertyDefaults = function() {
 	this.parameterValidationArray['scaleX']['range'].setMinAndMax(+0.5, +1.9);
 	this.parameterValidationArray['scaleY']['range'].setMinAndMax(+0.5, +1.9);
 
-	this.parameterValidationArray['originX']['range'].setMinAndMax(-200, +200);
-	this.parameterValidationArray['originY']['range'].setMinAndMax(-200, +200);
-
 	this.parameterValidationArray.size = {
 		kind: 'derived',
 		type: 'string',
@@ -207,13 +204,13 @@ ED.KeraticPrecipitates.prototype.draw = function(_point) {
 			this.handleArray[2].isVisible = true;
 			for (var i = 0; i < n; i++) {
 				p.setWithPolars(r * ED.randomArray[i], 2 * Math.PI * ED.randomArray[i + 100]);
-				this.drawSpot(ctx, p.x, p.y, dr, fill);
+				this.drawSpot(ctx, p.x-20, p.y, dr, fill);
 			}
 		} else if (this.size !== 'None') {
 			if (this.sentinel) {
 				this.handleArray[4].isVisible = false;
 				this.handleArray[2].isVisible = false;
-				this.drawSpot(ctx, 0, 50, dr, fill);
+				this.drawSpot(ctx, 0, 0, dr, fill);
 			} else if (this.size === 'Stellate') {
 				for (let i = 0; i < n; i++) {
 					p.setWithPolars(r * ED.randomArray[i], 2 * Math.PI * ED.randomArray[i + 100]);
@@ -292,6 +289,24 @@ ED.KeraticPrecipitates.prototype.draw = function(_point) {
 
 	// Return value indicating successful hittest
 	return this.isClicked;
+};
+
+// constrain precipitates within iris bound
+ED.KeraticPrecipitates.prototype.move = function(_x, _y) {
+	// Call move method in superclass
+	ED.KeraticPrecipitates.superclass.move.call(this, _x, _y);
+
+	let maxRadius = 160 / this.scaleX; // size of dot cloud is set by scaling, so adjust for that
+	if (this.sentinel) {
+		maxRadius = 360;
+	}
+
+	let origPoint = new ED.Point(this.originX, this.originY);
+	if (origPoint.length() > maxRadius) {
+		origPoint.setWithPolars(maxRadius, origPoint.direction());
+		this.originX = origPoint.x;
+		this.originY = origPoint.y;
+	}
 };
 
 /**

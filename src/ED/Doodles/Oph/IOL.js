@@ -60,11 +60,7 @@ ED.IOL.prototype.setHandles = function() {
 ED.IOL.prototype.setPropertyDefaults = function() {
 	this.addAtBack = this.type == 'PC'?true:false;
 	this.isUnique = true;
-	
-	// Update component of validation array for simple parameters
-	this.parameterValidationArray['originX']['range'].setMinAndMax(-125, +125);
-	this.parameterValidationArray['originY']['range'].setMinAndMax(-125, +125);
-	
+
 	// Validation arrays for derived and other parameters
 	this.parameterValidationArray['type'] = {
 		kind: 'other',
@@ -267,12 +263,14 @@ ED.IOL.prototype.draw = function(_point) {
 	point.setWithPolars(r, Math.PI / 4);
 	this.handleArray[2].location = this.transform.transformPoint(point);
 
+	this.parameterValidationArray['originX']['circularRange'] = 380 - r;
+
 	// Draw handles if selected
 	if (this.isSelected && !this.isForDrawing) this.drawHandles(_point);
 
 	// Return value indicating successful hittest
 	return this.isClicked;
-}
+};
 
 /**
  * Returns a string containing a text description of the doodle

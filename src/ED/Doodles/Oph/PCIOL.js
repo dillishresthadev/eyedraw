@@ -82,11 +82,7 @@ ED.PCIOL.prototype.setPropertyDefaults = function() {
 		range:  new ED.Range(1, 8),
 		animate: false
 	};
-	
-	// Update component of validation array for simple parameters
-	this.parameterValidationArray['originX']['range'].setMinAndMax(-200, +200);
-	this.parameterValidationArray['originY']['range'].setMinAndMax(-200, +200);
-}
+};
 
 /**
  * Calculates values of dependent parameters. This function embodies the relationship between simple and derived parameters
@@ -178,6 +174,8 @@ ED.PCIOL.prototype.draw = function(_point) {
 	var point = new ED.Point(0, 0)
 	point.setWithPolars(r, Math.PI / 4);
 	this.handleArray[2].location = this.transform.transformPoint(point);
+
+	this.parameterValidationArray['originX']['circularRange'] = 380 - r + 55;
 
 	// Draw handles if selected
 	if (this.isSelected && !this.isForDrawing) this.drawHandles(_point);

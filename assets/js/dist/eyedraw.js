@@ -3590,7 +3590,7 @@ ED.Doodle = function(_drawing, _parameterJSON) {
 						for (var k = 0; k < pointsArray.length; k++) {
 							var point = undefined;
 							if (!isNaN(parseFloat(pointsArray[k].x)) && !isNaN(parseFloat(pointsArray[k].y))) {
-                                point = new ED.Point(pointsArray[k].x, pointsArray[k].y);
+								point = new ED.Point(pointsArray[k].x, pointsArray[k].y);
 							}
 							squiggle.addPoint(point);
 						}
@@ -3737,6 +3737,17 @@ ED.Doodle.prototype.move = function (_x, _y) {
 		// Enforce bounds
 		var newOriginX = this.parameterValidationArray['originX']['range'].constrain(this.originX + x, this.scaleLevel);
 		var newOriginY = this.parameterValidationArray['originY']['range'].constrain(this.originY + y, this.scaleLevel);
+
+		// if bound have been set as radius
+		let circularRange = this.parameterValidationArray['originX']['circularRange'] || this.parameterValidationArray['originY']['circularRange'];
+		if (circularRange) {
+			let tempPoint = new ED.Point(newOriginX, newOriginY);
+			if (tempPoint.length() > circularRange) {
+				tempPoint.setWithPolars(circularRange, tempPoint.direction());
+				newOriginX = tempPoint.x;
+				newOriginY = tempPoint.y;
+			}
+		}
 
 		// Move doodle to new position
 		if (x !== 0) {
@@ -3947,7 +3958,7 @@ ED.Doodle.prototype.drawBoundary = function(_point, mode) {
 	else {
 		// Specify highlight attributes
 		if (this.isSelected && this.isShowHighlight) {
-            ctx.shadowColor = "gray";
+			ctx.shadowColor = "gray";
 			ctx.shadowOffsetX = 0;
 			ctx.shadowOffsetY = 0;
 			ctx.shadowBlur = 20;
@@ -4446,9 +4457,9 @@ ED.Doodle.prototype.parameterElement = function(_parameter, showLabel) {
 		case 'bool':
 			// Create a checkbox element
 			element = document.createElement('input');
-    		element.type = 'checkbox';
-    		element.setAttribute('id', this.parameterControlElementId(_parameter));
-    		break;
+			element.type = 'checkbox';
+			element.setAttribute('id', this.parameterControlElementId(_parameter));
+			break;
 
 		case 'colourString':
 			// Create a colour picker
@@ -4488,36 +4499,36 @@ ED.Doodle.prototype.parameterElement = function(_parameter, showLabel) {
 				option.value = this.parameterValidationArray[_parameter].list[i];
 				element.appendChild(option);
 			}
-    		break;
+			break;
 
 		case 'float':
 			// Create a text input element
 			element = document.createElement('input');
-    		element.type = 'text';
-    		element.setAttribute('id', this.parameterControlElementId(_parameter));
-    		break;
+			element.type = 'text';
+			element.setAttribute('id', this.parameterControlElementId(_parameter));
+			break;
 
 		case 'int':
 			// Create a text input element
 			element = document.createElement('input');
-    		element.type = 'text';
-    		element.setAttribute('id', this.parameterControlElementId(_parameter));
-    		break;
+			element.type = 'text';
+			element.setAttribute('id', this.parameterControlElementId(_parameter));
+			break;
 
 		case 'mod':
 			// Create a text input element
 			element = document.createElement('input');
-    		element.type = 'text';
-    		element.setAttribute('id', this.parameterControlElementId(_parameter));
-    		break;
+			element.type = 'text';
+			element.setAttribute('id', this.parameterControlElementId(_parameter));
+			break;
 
 		case 'freeText':
 			// Create a text input element
 			element = document.createElement('input');
-    		element.type = 'text';
-    		element.classList.add("cols-full");
-    		element.setAttribute('id', this.parameterControlElementId(_parameter));
-    		break;
+			element.type = 'text';
+			element.classList.add("cols-full");
+			element.setAttribute('id', this.parameterControlElementId(_parameter));
+			break;
 
 // 		case 'radio':
 // 			// Create a radio button element
@@ -4538,6 +4549,12 @@ ED.Doodle.prototype.parameterElement = function(_parameter, showLabel) {
 		var label = document.createElement('label');
 		label.innerText = this.controlParameterArray[_parameter];
 		label.setAttribute('for', this.parameterControlElementId(_parameter));
+		if (label.innerText.length > 10 && element.type === 'text') {
+			div.classList.add('opt-stack');
+		}
+		if (label.innerText.length > 39 && element.type === 'checkbox') {
+			div.classList.add('opt-checkbox');
+		}
 		div.appendChild(label);
 	}
 	div.appendChild(element);
@@ -4561,60 +4578,60 @@ ED.Doodle.prototype.setParameterWithAnimation = function(_parameter, _value, _up
 	// Check for animation flag and for valid result
 	if (this.parameterValidationArray[_parameter]['animate'] && !ED.objectIsEmpty(valueArray)) {
 
-			// Animate parameters
-			for (var parameter in valueArray) {
-				// Read delta in units per frame
-				var delta = this.parameterValidationArray[parameter]['delta'];
+		// Animate parameters
+		for (var parameter in valueArray) {
+			// Read delta in units per frame
+			var delta = this.parameterValidationArray[parameter]['delta'];
 
-				// Calculate 'distance' to go
-				var distance = valueArray[parameter] - this[parameter];
+			// Calculate 'distance' to go
+			var distance = valueArray[parameter] - this[parameter];
 
-				// Calculate sign and apply to delta
-				if (parameter == 'rotation') {
-					// This formula works out correct distance and direction on a radians 'clock face' (ie the shortest way round)
-					var sign = ((Math.PI - Math.abs(distance)) * distance) < 0 ? -1 : 1;
-					distance = distance * sign;
+			// Calculate sign and apply to delta
+			if (parameter == 'rotation') {
+				// This formula works out correct distance and direction on a radians 'clock face' (ie the shortest way round)
+				var sign = ((Math.PI - Math.abs(distance)) * distance) < 0 ? -1 : 1;
+				distance = distance * sign;
 
-					// Make distance positive
-					if (distance < 0) distance += 2 * Math.PI;
+				// Make distance positive
+				if (distance < 0) distance += 2 * Math.PI;
 
-					// Test for roughly half way
-					if (distance > 3.141) {
-						if (this.rotation < Math.PI) sign = -sign;
-					}
-				} else {
-					var sign = distance < 0 ? -1 : 1;
+				// Test for roughly half way
+				if (distance > 3.141) {
+					if (this.rotation < Math.PI) sign = -sign;
 				}
-				delta = delta * sign;
-
-				// Calculate number of frames to animate
-				var frames = Math.abs(Math.floor(distance / delta));
-
-				// Put results into an associative array for this parameter
-				var array = {
-					timer: null,
-					delta: delta,
-					frames: frames,
-					frameCounter: 0
-				};
-				this.animationDataArray[parameter] = array;
-
-				// Call animation method
-				if (frames > 0) {
-					this.increment(parameter, valueArray[parameter], _updateBindings);
-				}
-				// Increment may be too small to animate, but still needs setting
-				else {
-					// Set  parameter to exact value
-					this.setSimpleParameter(parameter, valueArray[parameter]);
-
-					// Update dependencies
-					this.updateDependentParameters(parameter, _updateBindings);
-
-					// Refresh drawing
-					this.drawing.repaint();
-				}
+			} else {
+				var sign = distance < 0 ? -1 : 1;
 			}
+			delta = delta * sign;
+
+			// Calculate number of frames to animate
+			var frames = Math.abs(Math.floor(distance / delta));
+
+			// Put results into an associative array for this parameter
+			var array = {
+				timer: null,
+				delta: delta,
+				frames: frames,
+				frameCounter: 0
+			};
+			this.animationDataArray[parameter] = array;
+
+			// Call animation method
+			if (frames > 0) {
+				this.increment(parameter, valueArray[parameter], _updateBindings);
+			}
+			// Increment may be too small to animate, but still needs setting
+			else {
+				// Set  parameter to exact value
+				this.setSimpleParameter(parameter, valueArray[parameter]);
+
+				// Update dependencies
+				this.updateDependentParameters(parameter, _updateBindings);
+
+				// Refresh drawing
+				this.drawing.repaint();
+			}
+		}
 	}
 
 	// Otherwise just set value directly
@@ -4657,7 +4674,7 @@ ED.Doodle.prototype.setParameterFromString = function(_parameter, _value, _updat
 	// Check type of passed value variable
 	var type = typeof(_value);
 	if (type != 'string') {
-		ED.errorHandler('ED.Doodle', 'setParameterFromString', '_value parameter should be of type string, not ' + type + ' for parameter ' + _parameter);
+		ED.errorHandler('ED.Doodle', 'setParameterFromString', '_value parameter should be of type string, not ' + type);
 	}
 
 	// Retrieve validation object for this doodle
@@ -4691,7 +4708,7 @@ ED.Doodle.prototype.setParameterFromString = function(_parameter, _value, _updat
 				break;
 
 			case 'freeText':
-				this[_parameter] = encodeURI(_value).replace(/'/g, "%27");
+				this[_parameter] = _value;
 				break;
 
 			default:
@@ -4878,7 +4895,7 @@ ED.Doodle.prototype.getParameter = function(_parameter) {
 				break;
 
 			case 'freeText':
-				value = decodeURI(this[_parameter]);
+				value = this[_parameter];
 				break;
 
 			default:
@@ -5159,7 +5176,7 @@ ED.Doodle.prototype.degrees = function() {
  */
 ED.Doodle.prototype.clockHourExtent = function(label) {
 	if (label === undefined) {
-        label = '';
+		label = '';
 	} else {
 		label = ' ' + label;
 	}
@@ -5459,7 +5476,7 @@ ED.Doodle.prototype.json = function() {
 					case 'lastOriginX':
 					case 'lastOriginY':
 						o *= (1 / this.scaleLevel);
-					break;
+						break;
 				}
 
 				// Special treatment according to parameter
@@ -5472,7 +5489,7 @@ ED.Doodle.prototype.json = function() {
 				} else if (typeof(o) == 'number') {
 					o = o.toFixed(2);
 				} else if (typeof(o) == 'string') {
-          o = o.replace('<', '&lt;');
+					o = o.replace('<', '&lt;');
 					o = '"' + o + '"';
 				} else if (typeof(o) == 'boolean') {
 					o = o;
@@ -5665,15 +5682,15 @@ ED.Doodle.prototype.drawNFLHaem = function(_ctx, _x, _y) {
  * @param {Float} _h Height
  */
 ED.Doodle.prototype.addEllipseToPath = function(_ctx, _x, _y, _w, _h) {
-  var kappa = 0.5522848;
-  var ox = (_w / 2) * kappa;
-  var oy = (_h / 2) * kappa;
+	var kappa = 0.5522848;
+	var ox = (_w / 2) * kappa;
+	var oy = (_h / 2) * kappa;
 
-  _ctx.moveTo(-_w/2, 0);
-  _ctx.bezierCurveTo(_x - _w/2, _y - oy, _x - ox, _y - _h/2, _x, _y - _h/2);
-  _ctx.bezierCurveTo(_x + ox, _y - _h/2, _x + _w/2, _y - oy, _x + _w/2, _y);
-  _ctx.bezierCurveTo(_x + _w/2, _y + oy, _x + ox, _y + _h/2, _x, _y + _h/2);
-  _ctx.bezierCurveTo(_x - ox, _y + _h/2, _x - _w/2, _y + oy, _x - _w/2, _y);
+	_ctx.moveTo(-_w/2, 0);
+	_ctx.bezierCurveTo(_x - _w/2, _y - oy, _x - ox, _y - _h/2, _x, _y - _h/2);
+	_ctx.bezierCurveTo(_x + ox, _y - _h/2, _x + _w/2, _y - oy, _x + _w/2, _y);
+	_ctx.bezierCurveTo(_x + _w/2, _y + oy, _x + ox, _y + _h/2, _x, _y + _h/2);
+	_ctx.bezierCurveTo(_x - ox, _y + _h/2, _x - _w/2, _y + oy, _x - _w/2, _y);
 };
 
 /**
@@ -13619,11 +13636,7 @@ ED.ACIOL.prototype.setHandles = function() {
 ED.ACIOL.prototype.setPropertyDefaults = function() {
 	this.isScaleable = false;
 	this.isUnique = true;
-	
-	// Update component of validation array for simple parameters
-	this.parameterValidationArray['originX']['range'].setMinAndMax(-200, +200);
-	this.parameterValidationArray['originY']['range'].setMinAndMax(-200, +200);
-}
+};
 
 /**
  * Draws doodle or performs a hit test if a Point parameter is passed
@@ -13698,6 +13711,8 @@ ED.ACIOL.prototype.draw = function(_point) {
 	var point = new ED.Point(0, 0)
 	point.setWithPolars(r, Math.PI / 4);
 	this.handleArray[2].location = this.transform.transformPoint(point);
+
+	this.parameterValidationArray['originX']['circularRange'] = 380 - r + 45;
 
 	// Draw handles if selected
 	if (this.isSelected && !this.isForDrawing) this.drawHandles(_point);
@@ -14110,7 +14125,7 @@ ED.AdenoviralKeratitis.prototype.dependentParameterValues = function(_parameter,
 	}
 
 	return returnArray;
-}
+};
 
 /**
  * Draws doodle or performs a hit test if a Point parameter is passed
@@ -14169,12 +14184,14 @@ ED.AdenoviralKeratitis.prototype.draw = function(_point) {
 	this.handleArray[2].location = this.transform.transformPoint(new ED.Point(r * 0.7, -r * 0.7));
 	this.handleArray[4].location = this.transform.transformPoint(new ED.Point(this.apexX, this.apexY));
 
+	this.parameterValidationArray['originX']['circularRange'] = 400 - r * this.scaleX;
+
 	// Draw handles if selected
 	if (this.isSelected && !this.isForDrawing) this.drawHandles(_point);
 
 	// Return value indicating successful hittest
 	return this.isClicked;
-}
+};
 
 /**
  * Returns a string containing a text description of the doodle
@@ -23767,7 +23784,7 @@ ED.ConjunctivalHaem = function(_drawing, _parameterJSON) {
     this.swellingGrade = 'None';
     this.mucopurulent = false;
     this.conjunctivitisType = 'None';
-    this.hyperaemia = '+';
+    this.hyperaemia = '++';
 
     // Saved parameters
     this.savedParameterArray = [
@@ -23858,33 +23875,14 @@ ED.ConjunctivalHaem.prototype.createPattern = function(density, colour) {
     pattern.height = 20 * density;
     var pctx = pattern.getContext('2d');
     pctx.fillStyle = colour;
-    pctx.fillRect(0,0,10,10);
-    pctx.fillRect(10 * density,10 * density, 10, 10);
+
+    pctx.fillRect(0, 0, pattern.width, pattern.height);
+    pctx.fill();
+    pctx.fillStyle = "rgb(255,37,3)";
+    pctx.fillRect(0, 0, 5, 5);
+    pctx.fillRect(10 * density, 10 * density, 5, 5);
+    pctx.fill();
     return pattern;
-};
-
-ED.ConjunctivalHaem.prototype.createSwelling = function(ctx, arcStart, arcEnd, ro, ri) {
-    ctx.beginPath();
-    // Arc across to mirror image point on the other side
-    ctx.arc(0, 0, ro, arcStart, arcEnd, true);
-
-    // Arc back to mirror image point on the other side
-    ctx.arc(0, 0, ri, arcEnd, arcStart, false);
-
-    // Set line attributes
-    ctx.lineWidth = 0;
-    ctx.fillStyle = "rgba(255, 255, 255, 0)";
-    ctx.strokeStyle = "#dae6f1";
-
-    let colour = this.haemorrhageGrade === 'None' ? "rgba(149,179,217,0.75)" : "rgba(149,179,217,0.5)";
-
-    if (this.swellingGrade === '++' ) {
-        colour = this.haemorrhageGrade === 'None' ? "rgba(85,141,213,0.75)" : "rgba(85,141,213,0.5)";
-    }
-
-    ctx.fillStyle = colour;
-    ctx.fill();
-    ctx.closePath();
 };
 
 /**
@@ -23898,17 +23896,6 @@ ED.ConjunctivalHaem.prototype.setParameterDefaults = function() {
 
 ED.ConjunctivalHaem.prototype.dependentParameterValues = function(_parameter, _value) {
     var returnArray = [];
-
-    switch (_parameter) {
-        case 'conjunctivitisType':
-            // this functionality caused a bug when page reloads (error screen eg)
-            // it reverts back to '+' even if user selected '+++'
-            // if (_value !== 'None') {
-            //     returnArray['hyperaemia'] = '+';
-            // }
-            break;
-    }
-
     return returnArray;
 };
 
@@ -23940,15 +23927,10 @@ ED.ConjunctivalHaem.prototype.draw = function(_point) {
     var topLeftX = -r * Math.sin(theta);
     var topLeftY = topRightY;
 
-    // Draw swelling under hyperaemia pattern
-    if (this.swellingGrade !== 'None' && this.haemorrhageGrade === 'None') {
-        this.createSwelling(ctx, arcStart, arcEnd, ro, ri);
-    }
-
     // Boundary path
     ctx.beginPath();
 
-    if (this.haemorrhageGrade !== 'None' || this.swellingGrade !== 'None' || this.conjunctivitisType !== 'None' || this.hyperaemia !== 'None') {
+    if (this.haemorrhageGrade !== 'None' || this.swellingGrade !== 'None' || this.hyperaemia !== 'None') {
         // Arc across to mirror image point on the other side
         ctx.arc(0, 0, ro, arcStart, arcEnd, true);
 
@@ -23960,57 +23942,56 @@ ED.ConjunctivalHaem.prototype.draw = function(_point) {
 
         // Set line attributes
         ctx.lineWidth = 0;
-        ctx.fillStyle = "rgba(255, 255, 255, 0)";
         ctx.strokeStyle = "#dae6f1";
     }
 
-    // If Haemorrhage - then regardless of additionselection the fill in colour for haemorrhage is shown.
+    let colour, density;
+    colour = "rgba(255,255,255,0)";
+
     if (this.haemorrhageGrade !== 'None') {
-
-    let colour = "rgb(241,22,20)";
-
-        if(this.haemorrhageGrade === '++' ) {
-            colour = "rgb(208,10,8)";
+        switch (this.haemorrhageGrade) {
+            case '+':
+                colour = "rgb(238,222,222)";
+                break;
+            case '++':
+                colour = "rgb(217,140,148)";
+                break;
+            case '+++':
+                colour = "rgb(255,37,3)";
+                break;
         }
-        if(this.haemorrhageGrade === '+++' ) {
-            colour = "rgb(166,4,2)";
+    } else {
+        if (this.swellingGrade !== 'None') {
+            switch (this.swellingGrade) {
+                case '+':
+                    colour = "rgb(149,180,215)"
+                    break;
+                case '++':
+                    colour = "rgb(85,141,213)";
+                    break;
+
+            }
         }
-
-        ctx.fillStyle = colour;
-
-        if (this.hyperaemia === '+') {
-            ctx.filter = "opacity(50%)";
-        } else if (this.hyperaemia === '++') {
-            ctx.filter = "opacity(70%)";
-        } else if (this.hyperaemia === '+++') {
-            ctx.filter = "opacity(90%)";
+        if (this.hyperaemia !== 'None') {
+            switch (this.hyperaemia) {
+                case '+':
+                    density = 3;
+                    break;
+                case '++':
+                    density = 2;
+                    break;
+                case '+++':
+                    density = 1;
+                    break;
+            }
+            colour = ctx.createPattern(this.createPattern(density, colour), "repeat");
         }
-
-    } else if (this.hyperaemia !== 'None') {
-        let density;
-
-        if (this.hyperaemia === '+') {
-            density = 3;
-        } else if (this.hyperaemia === '++') {
-            density = 2;
-        } else if (this.hyperaemia === '+++') {
-            density = 1.5;
-        }
-
-        let colour = "rgb(240,10,8)";
-        ctx.fillStyle = ctx.createPattern(this.createPattern(density, colour), "repeat");
-        ctx.fill();
     }
+    ctx.fillStyle = colour;
     ctx.closePath();
-
 
     // Draw boundary path (also hit testing)
     this.drawBoundary(_point);
-
-    // Draw swelling on top of haemorrhage
-    if (this.swellingGrade !== 'None' && this.haemorrhageGrade !== 'None') {
-        this.createSwelling(ctx, arcStart, arcEnd, ro, ri);
-    }
 
     // Coordinates of handles (in canvas plane)
     this.handleArray[0].location = this.transform.transformPoint(new ED.Point(topLeftX, topLeftY));
@@ -24051,40 +24032,34 @@ ED.ConjunctivalHaem.prototype.groupDescription = function() {
 
 };
 
-ED.ConjunctivalHaem.prototype.getDescriptionForDoodle = function(doodle) {
-		let description = "";
+ED.ConjunctivalHaem.prototype.getDescriptionForDoodle = function (doodle) {
 
-    if (doodle.conjunctivitisType !== 'None') {
-      description += doodle.conjunctivitisType + " conjunctivitis";
-    }
+	let description = '';
+	if (doodle.conjunctivitisType !== 'None') {
+		description = doodle.conjunctivitisType + ' conjunctivitis';
+	}
 
-    if (doodle.hyperaemia !== 'None') {
-      description += description === "" ? "Conjunctival hyperaemia ": ", conjunctival hyperaemia ";
-      description += doodle.hyperaemia;
-    }
+	if (doodle.hyperaemia !== 'None') {
+		description += (description.length ? ', ' : '');
+		description += "hyperaemia " + doodle.hyperaemia + " " + this.clockHourExtent() + " o'clock";
+	}
+	if (doodle.haemorrhageGrade !== 'None') {
 
-    if (doodle.haemorrhageGrade !== 'None') {
-      description += description === "" ? "Conjunctival haemorrhage " : ", conjunctival haemorrhage ";
-      description += doodle.haemorrhageGrade;
-    }
+		description += (description.length ? ', ' : '');
+		description += "haemorrhage " + this.clockHourExtent() + " o'clock";
+	}
 
-    if (doodle.swellingGrade !== 'None') {
-			description += description === "" ? "Conjunctival swelling " : ", conjunctival swelling ";
-			description += doodle.swellingGrade;
-		}
+	if (doodle.swellingGrade !== 'None') {
+		description += (description.length ? ', ' : '');
+		description += "swelling " + this.clockHourExtent() + " o'clock";
+	}
 
-		if (description !== "") {
-      if (doodle.hyperaemia !== 'None' || doodle.haemorrhageGrade !== 'None' || doodle.swellingGrade !== 'None') {
-        let degrees = Math.round((doodle.arc / Math.PI) * 180);
-        description += degrees === 360 ? " 360\xB0" : " at " + doodle.clockHour() + " o'clock";
-      }
-    }
+	if (doodle.mucopurulent === true) {
+		description += (description.length ? ', ' : '');
+		description += "mucopurulent";
+	}
 
-    if (doodle.mucopurulent === true) {
-      description 	+= description === "" ? "Mucopurulent discharge" : ", mucopurulent discharge";
-    }
-
-    return description;
+	return description;
 };
 
 ED.ConjunctivalHaem.prototype.snomedCodes = function()
@@ -24104,8 +24079,9 @@ ED.ConjunctivalHaem.prototype.snomedCodes = function()
         snomedCodes.push([86402005, 3]);
     }
 
-  return snomedCodes;
+    return snomedCodes;
 };
+
 /**
  * OpenEyes
  *
@@ -25229,10 +25205,6 @@ ED.CornealEpithelialDefect.prototype.setPropertyDefaults = function() {
 		this.handleVectorRangeArray[i] = range;
 	}
 	
-	// Update component of validation array for simple parameters
-	this.parameterValidationArray['originX']['range'].setMinAndMax(-350, +350);
-	this.parameterValidationArray['originY']['range'].setMinAndMax(-350, +350);
-	
 	// Validation arrays for other parameters
 	this.parameterValidationArray['fHeight'] = {
 		kind: 'other',
@@ -25401,6 +25373,10 @@ ED.CornealEpithelialDefect.prototype.draw = function(_point) {
 		this.handleArray[i].location = this.transform.transformPoint(this.squiggleArray[0].pointsArray[i]);
 	}
 
+	const reducer = (min, currPoint) => Math.min(min, currPoint.length());
+	let minHandleDist = this.squiggleArray[0].pointsArray.reduce(reducer, this.squiggleArray[0].pointsArray[0].length());
+	this.parameterValidationArray['originX']['circularRange'] = 380 - minHandleDist;
+
 	// Non boundary drawing
 	if (this.drawFunctionMode == ED.drawFunctionMode.Draw) {
 		
@@ -25423,6 +25399,7 @@ ED.CornealEpithelialDefect.prototype.draw = function(_point) {
 ED.CornealEpithelialDefect.prototype.description = function() {
 	return 'Epithelial defect H-W: ' + this.fHeight.toFixed(1) + ' x ' + this.fWidth.toFixed(1) + ' mm';
 };
+
 /**
  * OpenEyes
  *
@@ -27516,6 +27493,8 @@ ED.CornealOedema.prototype.draw = function(_point) {
 // 		this.handleArray[i].location = this.transform.transformPoint(this.squiggleArray[0].pointsArray[i]);
 // 	}
 
+	this.parameterValidationArray['originX']['circularRange'] = 380-r;
+
 	// Draw handles if selected
 	if (this.isSelected && !this.isForDrawing) this.drawHandles(_point);
 
@@ -28514,7 +28493,11 @@ ED.CornealOpacity.prototype.draw = function(_point) {
 			ctx.fill();
 		}
 	}
-	
+
+	const reducer = (min, currPoint) => Math.min(min, currPoint.length());
+	let minHandleDist = this.squiggleArray[0].pointsArray.reduce(reducer, this.squiggleArray[0].pointsArray[0].length());
+	this.parameterValidationArray['originX']['circularRange'] = 380 - minHandleDist;
+
 	// Draw handles if selected
 	if (this.isSelected && !this.isForDrawing) {
 		this.drawHandles(_point);
@@ -29662,6 +29645,8 @@ ED.CornealPigmentation.prototype.draw = function(_point) {
 	// Coordinates of handles (in canvas plane)
 	this.handleArray[4].location = this.transform.transformPoint(new ED.Point(this.apexX, this.apexY));
 
+	this.parameterValidationArray['originX']['circularRange'] = 380-Math.min(Math.abs(this.apexX), Math.abs(this.apexY));
+	
 	// Draw handles if selected
 	if (this.isSelected && !this.isForDrawing) this.drawHandles(_point);
 
@@ -29810,12 +29795,14 @@ ED.CornealScar.prototype.draw = function(_point) {
 	this.handleArray[2].location = this.transform.transformPoint(point);
 	this.handleArray[4].location = this.transform.transformPoint(new ED.Point(this.apexX, this.apexY));
 
+	this.parameterValidationArray['originX']['circularRange'] = 380 - Math.min(r * this.scaleX, r * this.scaleY);
+
 	// Draw handles if selected
 	if (this.isSelected && !this.isForDrawing) this.drawHandles(_point);
 
 	// Return value indicating successful hittest
 	return this.isClicked;
-}
+};
 
 /**
  * Returns a string containing a text description of the doodle
@@ -32836,6 +32823,10 @@ ED.DendriticUlcer.prototype.draw = function(_point) {
 	for (var i = 0; i < this.numberOfHandles; i++) {
 		this.handleArray[i].location = this.transform.transformPoint(this.squiggleArray[0].pointsArray[i]);
 	}
+
+	const reducer = (min, currPoint) => Math.min(min, currPoint.length());
+	let minHandleDist = this.squiggleArray[0].pointsArray.reduce(reducer, this.squiggleArray[0].pointsArray[0].length())
+	this.parameterValidationArray['originX']['circularRange'] = 380 - minHandleDist;
 
 	// Draw handles if selected
 	if (this.isSelected && !this.isForDrawing) this.drawHandles(_point);
@@ -37068,6 +37059,8 @@ ED.Fuchs.prototype.draw = function(_point) {
 	point.setWithPolars(r, Math.PI / 4);
 	this.handleArray[2].location = this.transform.transformPoint(point);
 
+	this.parameterValidationArray['originX']['circularRange'] = 380-Math.min(r * this.scaleX, r * this.scaleY);
+
 	// Draw handles if selected
 	if (this.isSelected && !this.isForDrawing) this.drawHandles(_point);
 
@@ -40955,11 +40948,7 @@ ED.IOL.prototype.setHandles = function() {
 ED.IOL.prototype.setPropertyDefaults = function() {
 	this.addAtBack = this.type == 'PC'?true:false;
 	this.isUnique = true;
-	
-	// Update component of validation array for simple parameters
-	this.parameterValidationArray['originX']['range'].setMinAndMax(-125, +125);
-	this.parameterValidationArray['originY']['range'].setMinAndMax(-125, +125);
-	
+
 	// Validation arrays for derived and other parameters
 	this.parameterValidationArray['type'] = {
 		kind: 'other',
@@ -41162,12 +41151,14 @@ ED.IOL.prototype.draw = function(_point) {
 	point.setWithPolars(r, Math.PI / 4);
 	this.handleArray[2].location = this.transform.transformPoint(point);
 
+	this.parameterValidationArray['originX']['circularRange'] = 380 - r;
+
 	// Draw handles if selected
 	if (this.isSelected && !this.isForDrawing) this.drawHandles(_point);
 
 	// Return value indicating successful hittest
 	return this.isClicked;
-}
+};
 
 /**
  * Returns a string containing a text description of the doodle
@@ -42065,9 +42056,6 @@ ED.KeraticPrecipitates.prototype.setPropertyDefaults = function() {
 	this.parameterValidationArray['scaleX']['range'].setMinAndMax(+0.5, +1.9);
 	this.parameterValidationArray['scaleY']['range'].setMinAndMax(+0.5, +1.9);
 
-	this.parameterValidationArray['originX']['range'].setMinAndMax(-200, +200);
-	this.parameterValidationArray['originY']['range'].setMinAndMax(-200, +200);
-
 	this.parameterValidationArray.size = {
 		kind: 'derived',
 		type: 'string',
@@ -42195,13 +42183,13 @@ ED.KeraticPrecipitates.prototype.draw = function(_point) {
 			this.handleArray[2].isVisible = true;
 			for (var i = 0; i < n; i++) {
 				p.setWithPolars(r * ED.randomArray[i], 2 * Math.PI * ED.randomArray[i + 100]);
-				this.drawSpot(ctx, p.x, p.y, dr, fill);
+				this.drawSpot(ctx, p.x-20, p.y, dr, fill);
 			}
 		} else if (this.size !== 'None') {
 			if (this.sentinel) {
 				this.handleArray[4].isVisible = false;
 				this.handleArray[2].isVisible = false;
-				this.drawSpot(ctx, 0, 50, dr, fill);
+				this.drawSpot(ctx, 0, 0, dr, fill);
 			} else if (this.size === 'Stellate') {
 				for (let i = 0; i < n; i++) {
 					p.setWithPolars(r * ED.randomArray[i], 2 * Math.PI * ED.randomArray[i + 100]);
@@ -42280,6 +42268,24 @@ ED.KeraticPrecipitates.prototype.draw = function(_point) {
 
 	// Return value indicating successful hittest
 	return this.isClicked;
+};
+
+// constrain precipitates within iris bound
+ED.KeraticPrecipitates.prototype.move = function(_x, _y) {
+	// Call move method in superclass
+	ED.KeraticPrecipitates.superclass.move.call(this, _x, _y);
+
+	let maxRadius = 160 / this.scaleX; // size of dot cloud is set by scaling, so adjust for that
+	if (this.sentinel) {
+		maxRadius = 360;
+	}
+
+	let origPoint = new ED.Point(this.originX, this.originY);
+	if (origPoint.length() > maxRadius) {
+		origPoint.setWithPolars(maxRadius, origPoint.direction());
+		this.originX = origPoint.x;
+		this.originY = origPoint.y;
+	}
 };
 
 /**
@@ -43047,12 +43053,14 @@ ED.KrukenbergSpindle.prototype.draw = function(_point) {;
 	// Coordinates of handles (in canvas plane)
 	this.handleArray[4].location = this.transform.transformPoint(new ED.Point(this.apexX, this.apexY));
 
+	this.parameterValidationArray['originX']['circularRange'] = 420 + this.apexY/2.5;
+
 	// Draw handles if selected
 	if (this.isSelected && !this.isForDrawing) this.drawHandles(_point);
 
 	// Return value indicating successful hittest
 	return this.isClicked;
-}
+};
 
 /**
  * Returns a string containing a text description of the doodle
@@ -43061,7 +43069,7 @@ ED.KrukenbergSpindle.prototype.draw = function(_point) {;
  */
 ED.KrukenbergSpindle.prototype.description = function() {
 	return "Krukenberg spindle";
-}
+};
 
 /**
  * OpenEyes
@@ -50929,11 +50937,7 @@ ED.PCIOL.prototype.setPropertyDefaults = function() {
 		range:  new ED.Range(1, 8),
 		animate: false
 	};
-	
-	// Update component of validation array for simple parameters
-	this.parameterValidationArray['originX']['range'].setMinAndMax(-200, +200);
-	this.parameterValidationArray['originY']['range'].setMinAndMax(-200, +200);
-}
+};
 
 /**
  * Calculates values of dependent parameters. This function embodies the relationship between simple and derived parameters
@@ -51025,6 +51029,8 @@ ED.PCIOL.prototype.draw = function(_point) {
 	var point = new ED.Point(0, 0)
 	point.setWithPolars(r, Math.PI / 4);
 	this.handleArray[2].location = this.transform.transformPoint(point);
+
+	this.parameterValidationArray['originX']['circularRange'] = 380 - r + 55;
 
 	// Draw handles if selected
 	if (this.isSelected && !this.isForDrawing) this.drawHandles(_point);
@@ -60606,16 +60612,25 @@ ED.SMILE.prototype.description = function() {
  * @param {Drawing} _drawing
  * @param {Object} _parameterJSON
  */
-ED.SPEE = function(_drawing, _parameterJSON) {
+ED.SPEE = function (_drawing, _parameterJSON) {
 	// Set classname
 	this.className = "SPEE";
 
 	// Saved parameters
-	this.savedParameterArray = ['originX', 'originY', 'apexY', 'apexX', 'scaleX','scaleY', 'rotation'];
+	this.savedParameterArray = ['originX', 'originY', 'apexY', 'apexX', 'scaleX', 'scaleY', 'rotation', 'configuration', 'previousConfiguration'];
+	this.configuration = 'Diffuse, moderate';
+	this.previousConfiguration = 'Diffuse, moderate';
+
+	this.controlParameterArray = { 'configuration': 'Set configuration' };
+
+	this.randomArray = new Array(20000); // we need a longer randomArray than ED.randomArray
+	for (let i = 0; i < this.randomArray.length; i++) {
+		this.randomArray[i] = Math.random();
+	}
 
 	// Call superclass constructor
 	ED.Doodle.call(this, _drawing, _parameterJSON);
-}
+};
 
 /**
  * Sets superclass and constructor
@@ -60635,7 +60650,7 @@ ED.SPEE.prototype.setHandles = function() {
 	// shape
 	this.handleArray[4] = new ED.Doodle.Handle(null, true, ED.Mode.Apex, false);
 	this.handleArray[4].isRotatable = true;
-}
+};
 
 /**
  * Sets default properties
@@ -60646,41 +60661,97 @@ ED.SPEE.prototype.setPropertyDefaults = function() {
 	// Update component of validation array for simple parameters
 	this.parameterValidationArray['apexX']['range'].setMinAndMax(-400, +400);
 	this.parameterValidationArray['apexY']['range'].setMinAndMax(-400, +400);
-	
-	
+
+	this.parameterValidationArray['configuration'] = {
+		kind: 'other',
+		type: 'string',
+		list: ['Lower 1/3 light', 'Lower 1/3 dense', 'Middle 1/3 light', 'Middle 1/3 dense', 'Diffuse, light', 'Diffuse, moderate', 'Diffuse, heavy'],
+		animate: false
+	};
+
 	this.handleVectorRangeArray = new Array();
 	var range = new Object;
-	range.length = new ED.Range(+1, +150);
-	range.angle = new ED.Range(0.5*Math.PI, 0.5*Math.PI);
+	range.length = new ED.Range(+20, +350);
+	range.angle = new ED.Range(0.5 * Math.PI, 0.5 * Math.PI);
 	this.handleVectorRangeArray[0] = range;
-}
+};
 
 /**
  * Sets default parameters
  */
 ED.SPEE.prototype.setParameterDefaults = function() {
-	this.originX = 150;
-	this.originY = 40;
-	this.apexY = -50;
-	this.apexX = 170;
-	
+	this.originX = 0;
+	this.originY = 0;
+	this.apexY = 370;
+	this.apexX = 370;
+
 	// Create a squiggle to store the handles points
 	var squiggle = new ED.Squiggle(this, new ED.Colour(100, 100, 100, 1), 4, true);
 
 	// Add it to squiggle array
 	this.squiggleArray.push(squiggle);
 
-	var point = new ED.Point(40, 0);
+	var point = new ED.Point(100, 0);
 	this.addPointToSquiggle(point);
+};
 
-}
+ED.SPEE.prototype.dependentParameterValues = function (_parameter, _value) {
+	var returnArray = [];
+
+	switch (_parameter) {
+		case 'configuration':
+			if (_value !== this.previousConfiguration) {
+
+				this.originX = 0;
+				this.originY = 0;
+				this.apexX = 370;
+				this.apexY = 370;
+
+				switch (_value) {
+					case 'Diffuse, moderate':
+						this.squiggleArray[0].pointsArray[0].x = 100;
+						break;
+					case 'Diffuse, light':
+						this.squiggleArray[0].pointsArray[0].x = 50;
+						break;
+					case 'Diffuse, heavy':
+						this.squiggleArray[0].pointsArray[0].x = 150;
+						break;
+					case 'Lower 1/3 light':
+						this.squiggleArray[0].pointsArray[0].x = 50;
+						this.originY = 220;
+						this.apexX = 300;
+						this.apexY = 125;
+						break;
+					case 'Lower 1/3 dense':
+						this.squiggleArray[0].pointsArray[0].x = 150;
+						this.originY = 220;
+						this.apexX = 300;
+						this.apexY = 125;
+						break;
+					case 'Middle 1/3 light':
+						this.squiggleArray[0].pointsArray[0].x = 50;
+						this.apexY = 100;
+						break;
+					case 'Middle 1/3 dense':
+						this.squiggleArray[0].pointsArray[0].x = 150;
+						this.apexY = 100;
+						break;
+				}
+				this.previousConfiguration = _value;
+			}
+			break;
+	}
+
+	return returnArray;
+};
 
 /**
  * Draws doodle or performs a hit test if a Point parameter is passed
  *
  * @param {Point} _point Optional point in canvas plane, passed if performing hit test
  */
-ED.SPEE.prototype.draw = function(_point) {
+ED.SPEE.prototype.draw = function (_point) {
 	// Get context
 	var ctx = this.drawing.context;
 
@@ -60721,24 +60792,21 @@ ED.SPEE.prototype.draw = function(_point) {
 		var A = Math.PI * Math.abs(this.apexX * this.apexY);
 		
 		// Calculate number of dots within boundary
-		var n = A / 250 * (pD / 30);
-		
-		var p = new ED.Point(0, 0);
+		let n = Math.ceil(A / 250 * (pD / 50));
+		if (n >= this.randomArray.length / 2) {
+			n = Math.round(this.randomArray.length / 2);
+		}
+
+		let p = new ED.Point(0, 0);
 		
 		// Calculate random positions for dots			
-		for (var i = 0; i < n; i++) {
-			var j = (i < 150) ? i : (i < 199) ? i - 50 : (i < 249) ? i - 100 : (i < 299) ? i - 150 : (i < 349) ? i - 200 : i - 250;
+		for (let i = 0; i < n; i++) {
+			let theta = this.randomArray[i] * 2 * Math.PI;
+			let r = this.randomArray[i + this.randomArray.length / 2] * 100;
+			p.setWithPolars(r, theta);
+			p.x *= this.apexX / 100;
+			p.y *= this.apexY / 100;
 
-			var k = (i < 200) ? i : (i < 398) ? (i - 199) : (i < 397) ? (i - 298) : (i - 396);
-
-			var r = Math.sqrt(n * ED.randomArray[k]);
-			var rX = this.apexX * ED.randomArray[k];
-			var rY = this.apexY * ED.randomArray[j];
-			var theta = 2 * Math.PI * ED.randomArray[j + 50];
-							
-			p.x = rX * Math.cos(theta*r);
-			p.y = rY * Math.sin(theta*r);
-			
 			// Draw dot
 			this.drawSpot(ctx, p.x, p.y, dr, fill);
 		}
@@ -60750,6 +60818,8 @@ ED.SPEE.prototype.draw = function(_point) {
 		this.drawSpot(ctx, -1 * Math.abs(this.apexX), 0, dr, fill);
 	}
 
+	this.parameterValidationArray['originX']['circularRange'] = 380 - Math.min(Math.abs(this.apexX), Math.abs(this.apexY));
+
 	// Coordinates of handles (in canvas plane)
 	this.handleArray[4].location = this.transform.transformPoint(new ED.Point(this.apexX, this.apexY));
 
@@ -60758,7 +60828,7 @@ ED.SPEE.prototype.draw = function(_point) {
 
 	// Return value indicating successful hittest
 	return this.isClicked;
-}
+};
 
 /**
  * Returns a string containing a text description of the doodle
@@ -60767,7 +60837,7 @@ ED.SPEE.prototype.draw = function(_point) {
  */
 ED.SPEE.prototype.groupDescription = function() {	
 	return "Superficial punctate epithelial erosions";
-}
+};
 
 /**
  * Star fold of PVR

@@ -96,12 +96,14 @@ ED.KrukenbergSpindle.prototype.draw = function(_point) {;
 	// Coordinates of handles (in canvas plane)
 	this.handleArray[4].location = this.transform.transformPoint(new ED.Point(this.apexX, this.apexY));
 
+	this.parameterValidationArray['originX']['circularRange'] = 420 + this.apexY/2.5;
+
 	// Draw handles if selected
 	if (this.isSelected && !this.isForDrawing) this.drawHandles(_point);
 
 	// Return value indicating successful hittest
 	return this.isClicked;
-}
+};
 
 /**
  * Returns a string containing a text description of the doodle
@@ -110,4 +112,4 @@ ED.KrukenbergSpindle.prototype.draw = function(_point) {;
  */
 ED.KrukenbergSpindle.prototype.description = function() {
 	return "Krukenberg spindle";
-}
+};

@@ -104,7 +104,7 @@ ED.AdenoviralKeratitis.prototype.dependentParameterValues = function(_parameter,
 	}
 
 	return returnArray;
-}
+};
 
 /**
  * Draws doodle or performs a hit test if a Point parameter is passed
@@ -163,12 +163,14 @@ ED.AdenoviralKeratitis.prototype.draw = function(_point) {
 	this.handleArray[2].location = this.transform.transformPoint(new ED.Point(r * 0.7, -r * 0.7));
 	this.handleArray[4].location = this.transform.transformPoint(new ED.Point(this.apexX, this.apexY));
 
+	this.parameterValidationArray['originX']['circularRange'] = 400 - r * this.scaleX;
+
 	// Draw handles if selected
 	if (this.isSelected && !this.isForDrawing) this.drawHandles(_point);
 
 	// Return value indicating successful hittest
 	return this.isClicked;
-}
+};
 
 /**
  * Returns a string containing a text description of the doodle

@@ -93,6 +93,8 @@ ED.Fuchs.prototype.draw = function(_point) {
 	point.setWithPolars(r, Math.PI / 4);
 	this.handleArray[2].location = this.transform.transformPoint(point);
 
+	this.parameterValidationArray['originX']['circularRange'] = 380-Math.min(r * this.scaleX, r * this.scaleY);
+
 	// Draw handles if selected
 	if (this.isSelected && !this.isForDrawing) this.drawHandles(_point);
 

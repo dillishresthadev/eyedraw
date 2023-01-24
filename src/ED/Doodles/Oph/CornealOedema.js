@@ -296,6 +296,8 @@ ED.CornealOedema.prototype.draw = function(_point) {
 // 		this.handleArray[i].location = this.transform.transformPoint(this.squiggleArray[0].pointsArray[i]);
 // 	}
 
+	this.parameterValidationArray['originX']['circularRange'] = 380-r;
+
 	// Draw handles if selected
 	if (this.isSelected && !this.isForDrawing) this.drawHandles(_point);
 

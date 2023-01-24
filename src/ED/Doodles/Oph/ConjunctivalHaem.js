@@ -29,7 +29,7 @@ ED.ConjunctivalHaem = function(_drawing, _parameterJSON) {
     this.swellingGrade = 'None';
     this.mucopurulent = false;
     this.conjunctivitisType = 'None';
-    this.hyperaemia = '+';
+    this.hyperaemia = '++';
 
     // Saved parameters
     this.savedParameterArray = [
@@ -120,33 +120,14 @@ ED.ConjunctivalHaem.prototype.createPattern = function(density, colour) {
     pattern.height = 20 * density;
     var pctx = pattern.getContext('2d');
     pctx.fillStyle = colour;
-    pctx.fillRect(0,0,10,10);
-    pctx.fillRect(10 * density,10 * density, 10, 10);
+
+    pctx.fillRect(0, 0, pattern.width, pattern.height);
+    pctx.fill();
+    pctx.fillStyle = "rgb(255,37,3)";
+    pctx.fillRect(0, 0, 5, 5);
+    pctx.fillRect(10 * density, 10 * density, 5, 5);
+    pctx.fill();
     return pattern;
-};
-
-ED.ConjunctivalHaem.prototype.createSwelling = function(ctx, arcStart, arcEnd, ro, ri) {
-    ctx.beginPath();
-    // Arc across to mirror image point on the other side
-    ctx.arc(0, 0, ro, arcStart, arcEnd, true);
-
-    // Arc back to mirror image point on the other side
-    ctx.arc(0, 0, ri, arcEnd, arcStart, false);
-
-    // Set line attributes
-    ctx.lineWidth = 0;
-    ctx.fillStyle = "rgba(255, 255, 255, 0)";
-    ctx.strokeStyle = "#dae6f1";
-
-    let colour = this.haemorrhageGrade === 'None' ? "rgba(149,179,217,0.75)" : "rgba(149,179,217,0.5)";
-
-    if (this.swellingGrade === '++' ) {
-        colour = this.haemorrhageGrade === 'None' ? "rgba(85,141,213,0.75)" : "rgba(85,141,213,0.5)";
-    }
-
-    ctx.fillStyle = colour;
-    ctx.fill();
-    ctx.closePath();
 };
 
 /**
@@ -160,17 +141,6 @@ ED.ConjunctivalHaem.prototype.setParameterDefaults = function() {
 
 ED.ConjunctivalHaem.prototype.dependentParameterValues = function(_parameter, _value) {
     var returnArray = [];
-
-    switch (_parameter) {
-        case 'conjunctivitisType':
-            // this functionality caused a bug when page reloads (error screen eg)
-            // it reverts back to '+' even if user selected '+++'
-            // if (_value !== 'None') {
-            //     returnArray['hyperaemia'] = '+';
-            // }
-            break;
-    }
-
     return returnArray;
 };
 
@@ -202,15 +172,10 @@ ED.ConjunctivalHaem.prototype.draw = function(_point) {
     var topLeftX = -r * Math.sin(theta);
     var topLeftY = topRightY;
 
-    // Draw swelling under hyperaemia pattern
-    if (this.swellingGrade !== 'None' && this.haemorrhageGrade === 'None') {
-        this.createSwelling(ctx, arcStart, arcEnd, ro, ri);
-    }
-
     // Boundary path
     ctx.beginPath();
 
-    if (this.haemorrhageGrade !== 'None' || this.swellingGrade !== 'None' || this.conjunctivitisType !== 'None' || this.hyperaemia !== 'None') {
+    if (this.haemorrhageGrade !== 'None' || this.swellingGrade !== 'None' || this.hyperaemia !== 'None') {
         // Arc across to mirror image point on the other side
         ctx.arc(0, 0, ro, arcStart, arcEnd, true);
 
@@ -222,57 +187,56 @@ ED.ConjunctivalHaem.prototype.draw = function(_point) {
 
         // Set line attributes
         ctx.lineWidth = 0;
-        ctx.fillStyle = "rgba(255, 255, 255, 0)";
         ctx.strokeStyle = "#dae6f1";
     }
 
-    // If Haemorrhage - then regardless of additionselection the fill in colour for haemorrhage is shown.
+    let colour, density;
+    colour = "rgba(255,255,255,0)";
+
     if (this.haemorrhageGrade !== 'None') {
-
-    let colour = "rgb(241,22,20)";
-
-        if(this.haemorrhageGrade === '++' ) {
-            colour = "rgb(208,10,8)";
+        switch (this.haemorrhageGrade) {
+            case '+':
+                colour = "rgb(238,222,222)";
+                break;
+            case '++':
+                colour = "rgb(217,140,148)";
+                break;
+            case '+++':
+                colour = "rgb(255,37,3)";
+                break;
         }
-        if(this.haemorrhageGrade === '+++' ) {
-            colour = "rgb(166,4,2)";
+    } else {
+        if (this.swellingGrade !== 'None') {
+            switch (this.swellingGrade) {
+                case '+':
+                    colour = "rgb(149,180,215)"
+                    break;
+                case '++':
+                    colour = "rgb(85,141,213)";
+                    break;
+
+            }
         }
-
-        ctx.fillStyle = colour;
-
-        if (this.hyperaemia === '+') {
-            ctx.filter = "opacity(50%)";
-        } else if (this.hyperaemia === '++') {
-            ctx.filter = "opacity(70%)";
-        } else if (this.hyperaemia === '+++') {
-            ctx.filter = "opacity(90%)";
+        if (this.hyperaemia !== 'None') {
+            switch (this.hyperaemia) {
+                case '+':
+                    density = 3;
+                    break;
+                case '++':
+                    density = 2;
+                    break;
+                case '+++':
+                    density = 1;
+                    break;
+            }
+            colour = ctx.createPattern(this.createPattern(density, colour), "repeat");
         }
-
-    } else if (this.hyperaemia !== 'None') {
-        let density;
-
-        if (this.hyperaemia === '+') {
-            density = 3;
-        } else if (this.hyperaemia === '++') {
-            density = 2;
-        } else if (this.hyperaemia === '+++') {
-            density = 1.5;
-        }
-
-        let colour = "rgb(240,10,8)";
-        ctx.fillStyle = ctx.createPattern(this.createPattern(density, colour), "repeat");
-        ctx.fill();
     }
+    ctx.fillStyle = colour;
     ctx.closePath();
-
 
     // Draw boundary path (also hit testing)
     this.drawBoundary(_point);
-
-    // Draw swelling on top of haemorrhage
-    if (this.swellingGrade !== 'None' && this.haemorrhageGrade !== 'None') {
-        this.createSwelling(ctx, arcStart, arcEnd, ro, ri);
-    }
 
     // Coordinates of handles (in canvas plane)
     this.handleArray[0].location = this.transform.transformPoint(new ED.Point(topLeftX, topLeftY));
@@ -313,40 +277,34 @@ ED.ConjunctivalHaem.prototype.groupDescription = function() {
 
 };
 
-ED.ConjunctivalHaem.prototype.getDescriptionForDoodle = function(doodle) {
-		let description = "";
+ED.ConjunctivalHaem.prototype.getDescriptionForDoodle = function (doodle) {
 
-    if (doodle.conjunctivitisType !== 'None') {
-      description += doodle.conjunctivitisType + " conjunctivitis";
-    }
+	let description = '';
+	if (doodle.conjunctivitisType !== 'None') {
+		description = doodle.conjunctivitisType + ' conjunctivitis';
+	}
 
-    if (doodle.hyperaemia !== 'None') {
-      description += description === "" ? "Conjunctival hyperaemia ": ", conjunctival hyperaemia ";
-      description += doodle.hyperaemia;
-    }
+	if (doodle.hyperaemia !== 'None') {
+		description += (description.length ? ', ' : '');
+		description += "hyperaemia " + doodle.hyperaemia + " " + this.clockHourExtent() + " o'clock";
+	}
+	if (doodle.haemorrhageGrade !== 'None') {
 
-    if (doodle.haemorrhageGrade !== 'None') {
-      description += description === "" ? "Conjunctival haemorrhage " : ", conjunctival haemorrhage ";
-      description += doodle.haemorrhageGrade;
-    }
+		description += (description.length ? ', ' : '');
+		description += "haemorrhage " + this.clockHourExtent() + " o'clock";
+	}
 
-    if (doodle.swellingGrade !== 'None') {
-			description += description === "" ? "Conjunctival swelling " : ", conjunctival swelling ";
-			description += doodle.swellingGrade;
-		}
+	if (doodle.swellingGrade !== 'None') {
+		description += (description.length ? ', ' : '');
+		description += "swelling " + this.clockHourExtent() + " o'clock";
+	}
 
-		if (description !== "") {
-      if (doodle.hyperaemia !== 'None' || doodle.haemorrhageGrade !== 'None' || doodle.swellingGrade !== 'None') {
-        let degrees = Math.round((doodle.arc / Math.PI) * 180);
-        description += degrees === 360 ? " 360\xB0" : " at " + doodle.clockHour() + " o'clock";
-      }
-    }
+	if (doodle.mucopurulent === true) {
+		description += (description.length ? ', ' : '');
+		description += "mucopurulent";
+	}
 
-    if (doodle.mucopurulent === true) {
-      description 	+= description === "" ? "Mucopurulent discharge" : ", mucopurulent discharge";
-    }
-
-    return description;
+	return description;
 };
 
 ED.ConjunctivalHaem.prototype.snomedCodes = function()
@@ -366,5 +324,5 @@ ED.ConjunctivalHaem.prototype.snomedCodes = function()
         snomedCodes.push([86402005, 3]);
     }
 
-  return snomedCodes;
+    return snomedCodes;
 };

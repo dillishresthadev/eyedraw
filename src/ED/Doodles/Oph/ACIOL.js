@@ -58,11 +58,7 @@ ED.ACIOL.prototype.setHandles = function() {
 ED.ACIOL.prototype.setPropertyDefaults = function() {
 	this.isScaleable = false;
 	this.isUnique = true;
-	
-	// Update component of validation array for simple parameters
-	this.parameterValidationArray['originX']['range'].setMinAndMax(-200, +200);
-	this.parameterValidationArray['originY']['range'].setMinAndMax(-200, +200);
-}
+};
 
 /**
  * Draws doodle or performs a hit test if a Point parameter is passed
@@ -137,6 +133,8 @@ ED.ACIOL.prototype.draw = function(_point) {
 	var point = new ED.Point(0, 0)
 	point.setWithPolars(r, Math.PI / 4);
 	this.handleArray[2].location = this.transform.transformPoint(point);
+
+	this.parameterValidationArray['originX']['circularRange'] = 380 - r + 45;
 
 	// Draw handles if selected
 	if (this.isSelected && !this.isForDrawing) this.drawHandles(_point);

@@ -391,7 +391,11 @@ ED.CornealOpacity.prototype.draw = function(_point) {
 			ctx.fill();
 		}
 	}
-	
+
+	const reducer = (min, currPoint) => Math.min(min, currPoint.length());
+	let minHandleDist = this.squiggleArray[0].pointsArray.reduce(reducer, this.squiggleArray[0].pointsArray[0].length());
+	this.parameterValidationArray['originX']['circularRange'] = 380 - minHandleDist;
+
 	// Draw handles if selected
 	if (this.isSelected && !this.isForDrawing) {
 		this.drawHandles(_point);
