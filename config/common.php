@@ -1,4 +1,5 @@
 <?php
+
 /**
  * OpenEyes
  *
@@ -18,27 +19,25 @@
 $min = (defined('YII_DEBUG') && YII_DEBUG) ? '' : '.min';
 
 return array(
-	'import' => array(
-		'application.modules.eyedraw.*',
-	),
-	'components' => array(
-		'clientScript' => array(
-			'packages' => array(
-				'eyedraw' => array(
-					'js' => array(
-						"js/dist/eyedraw{$min}.js",
-						"js/dist/oe-eyedraw{$min}.js"
-					),
-					'css' => array(
-					),
-					'basePath' => 'application.modules.eyedraw.assets',
-					'depends' => array(
-						'jquery',
-						'mustache',
-						'eventemitter2'
-					),
-				)
-			),
-		)
-	)
+    'import' => array(
+        'application.modules.eyedraw.*',
+    ),
+    'components' => array(
+        'clientScript' => array(
+            'packages' => array(
+                'eyedraw' => array(
+                    'js' => array(
+                        "js/dist/eyedraw{$min}.js",
+                        "js/dist/oe-eyedraw{$min}.js"
+                    ),
+                    'css' => array(
+                    ),
+                    'basePath' => 'application.modules.eyedraw.assets',
+                    'depends' => array(
+                        'eventemitter2'
+                    ),
+                )
+            ),
+        )
+    )
 );
