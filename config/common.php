@@ -34,7 +34,8 @@ return array(
                     ),
                     'basePath' => 'application.modules.eyedraw.assets',
                     'depends' => array(
-                        'eventemitter2'
+                        'eventemitter2',
+                        'mustache' // a package that should be defined in core
                     ),
                 )
             ),
