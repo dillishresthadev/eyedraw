@@ -31,7 +31,7 @@ ED.Lids = function(_drawing, _parameterJSON) {
 
 	// Call superclass constructor
 	ED.Doodle.call(this, _drawing, _parameterJSON);
-}
+};
 
 /**
  * Sets superclass and constructor
@@ -46,7 +46,7 @@ ED.Lids.superclass = ED.Doodle.prototype;
 ED.Lids.prototype.setHandles = function() {
 	this.handleArray[0] = new ED.Doodle.Handle(null, true, ED.Mode.Handles, true);
 	this.handleArray[1] = new ED.Doodle.Handle(null, true, ED.Mode.Handles, true);
-}
+};
 
 /**
  * Sets default dragging attributes
@@ -59,7 +59,7 @@ ED.Lids.prototype.setPropertyDefaults = function() {
 	this.isShowHighlight = false;
 	
 	// Create ranges to constrain handles
-	this.handleCoordinateRangeArray = new Array();
+	this.handleCoordinateRangeArray = [];
 	this.handleCoordinateRangeArray[0] = {
 		// lower lid
 		x: new ED.Range(-260, +260),
@@ -76,19 +76,18 @@ ED.Lids.prototype.setPropertyDefaults = function() {
  * Sets default parameters
  */
 ED.Lids.prototype.setParameterDefaults = function() {
-	if (this.drawing.eye != ED.eye.Right) {
-		this.dir = -1;
+	if (this.drawing.eye !== ED.eye.Right) {
+		this.drawing.flipDrawingHorizontally();
 	}
-	else if (this.drawing.eye != ED.eye.Left){
-		this.dir = +1;
-	}
-	
+
+	this.dir = +1;
+
 	// handle start position
 	this.apexX = 0;
 	this.apexY = 110;
-	
+
 	// Create a squiggle to store the handles points
-	var squiggle = new ED.Squiggle(this, new ED.Colour(100, 100, 100, 1), 4, true);
+	let squiggle = new ED.Squiggle(this, new ED.Colour(100, 100, 100, 1), 4, true);
 
 	// Add it to squiggle array
 	this.squiggleArray.push(squiggle);
@@ -96,10 +95,10 @@ ED.Lids.prototype.setParameterDefaults = function() {
 	// Populate with handles on each lid
 	var point1 = new ED.Point(0, 115);
 	this.squiggleArray[0].pointsArray.push(point1);
-	
+
 	var point2 = new ED.Point(0, -90);
-	this.squiggleArray[0].pointsArray.push(point2);	
-}
+	this.squiggleArray[0].pointsArray.push(point2);
+};
 
 /**
  * Draws doodle or performs a hit test if a Point parameter is passed
@@ -108,43 +107,45 @@ ED.Lids.prototype.setParameterDefaults = function() {
  */
 ED.Lids.prototype.draw = function(_point) {
 	// Get context
-	var ctx = this.drawing.context;
+	let ctx = this.drawing.context;
 
 	// Call draw method in superclass
 	ED.Lids.superclass.draw.call(this, _point);
 
 	// Arc radius
-	var d = 250;
-	
+	let d = 250;
+
 	// control point height
-	var h = 160;
-	
+	let h = 160;
+
 	// control point width
-	var w = 90;
-	
+	let w = 90;
+
 	// Pupil radius
-	var rP = 100;
-	
+	let rP = 100;
+
 	// punctum radius
-	var p = 45;
+	let p = 45;
 
-	
+
 	// Calculate control point positions for bezier curves
-	var bMP = this.squiggleArray[0].pointsArray[0];
-	var bStart = new ED.Point(d * this.dir, p + (bMP.y-115)/5);
-	var bEnd = new ED.Point(-d * this.dir, 0);
+	let bMP = this.squiggleArray[0].pointsArray[0];
+	let bStart = new ED.Point(d * this.dir, p + (bMP.y-115)/5);
+	let bEnd = new ED.Point(-d * this.dir, 0);
 
-	if (bMP.x*this.dir > 20) bStart.x += (bMP.x-20)/5;
-		
-	var bCP1 = new ED.Point(bMP.x + 60*this.dir, bMP.y * 1.45);
-	var bCP2 = new ED.Point(bMP.x - 180*this.dir, bMP.y * 1.16);
-	
-	var tMP = this.squiggleArray[0].pointsArray[1];
-	var tEnd = new ED.Point(d * this.dir, 0 + (tMP.y/5+19));
+	if (bMP.x*this.dir > 20) {
+		bStart.x += (bMP.x-20)/5;
+	}
 
-	var tCP1 = new ED.Point(-85 * this.dir, tMP.y * 1.3);
-	var tCP2 = new ED.Point(85 * this.dir, tMP.y * 1.35);
-	
+	let bCP1 = new ED.Point(bMP.x + 60*this.dir, bMP.y * 1.45);
+	let bCP2 = new ED.Point(bMP.x - 180*this.dir, bMP.y * 1.16);
+
+	let tMP = this.squiggleArray[0].pointsArray[1];
+	let tEnd = new ED.Point(d * this.dir, 0 + (tMP.y/5+19));
+
+	let tCP1 = new ED.Point(-85 * this.dir, tMP.y * 1.3);
+	let tCP2 = new ED.Point(85 * this.dir, tMP.y * 1.35);
+
 	// Boundary path
 	ctx.beginPath();
 
@@ -163,7 +164,7 @@ ED.Lids.prototype.draw = function(_point) {
 	ctx.bezierCurveTo(tCP1.x, tCP1.y, tCP2.x, tCP2.y, tEnd.x, tEnd.y);
 	
 	// Punctum
-		ctx.bezierCurveTo(d * 1.25 * this.dir, p*0.9, d * 1.2 * this.dir, p, bStart.x, bStart.y);
+	ctx.bezierCurveTo(d * 1.25 * this.dir, p*0.9, d * 1.2 * this.dir, p, bStart.x, bStart.y);
 	  
 	// Bottom lid
 	ctx.bezierCurveTo(bCP1.x, bCP1.y, bCP2.x, bCP2.y, bEnd.x, bEnd.y);
@@ -173,18 +174,16 @@ ED.Lids.prototype.draw = function(_point) {
 
 	// Set drawing attributes
 	ctx.lineWidth = 5;
-	ctx.fillStyle = "white"
+	ctx.fillStyle = "white";
 	ctx.strokeStyle = "rgba(0,0,0,0)";
 	ctx.shadowBlur = 15;
 	ctx.shadowColor = "rgba(0,0,0,0.8)";
-
 
 	// Draw boundary path (also hit testing)
 	this.drawBoundary(_point);
 
 	// Non-boundary paths
-	if (this.drawFunctionMode == ED.drawFunctionMode.Draw) {
-	
+	if (this.drawFunctionMode === ED.drawFunctionMode.Draw) {
 		// lids outline
 		ctx.beginPath();
 		ctx.moveTo(-d * this.dir,0);
@@ -192,42 +191,39 @@ ED.Lids.prototype.draw = function(_point) {
 		ctx.bezierCurveTo(d * 1.25 * this.dir, p*0.9, d * 1.2 * this.dir, p, bStart.x, bStart.y);
 		ctx.bezierCurveTo(bCP1.x, bCP1.y, bCP2.x, bCP2.y, bEnd.x, bEnd.y);
 		ctx.moveTo(-d * this.dir,0);
+		ctx.lineWidth = 5;
 		ctx.strokeStyle = "black";
 		ctx.stroke();
 		ctx.closePath();
-		
-		// top lashes (ish)
-		ctx.beginPath();
-		ctx.moveTo(bEnd.x, bEnd.y);
-		ctx.lineTo(bEnd.x - p * 0.5 * this.dir,bEnd.y + p*0.5 - tMP.y/5-19);
-		ctx.stroke();
-		ctx.closePath();
-		
-		
+
 		// bottom lid ridge
-		var bRidgeCP1 = new ED.Point(bMP.x - 170*this.dir, bMP.y * 1.38);
-		var bRidgeCP2 = new ED.Point(bMP.x + 70*this.dir, bMP.y * 1.45);
+		let bRidgeCP1 = new ED.Point(bMP.x - 170*this.dir, bMP.y * 1.38);
+		let bRidgeCP2 = new ED.Point(bMP.x + 70*this.dir, bMP.y * 1.45);
 		ctx.beginPath();
 		ctx.moveTo(-d * this.dir,0);
 		ctx.bezierCurveTo(bRidgeCP1.x, bRidgeCP1.y, bRidgeCP2.x, bRidgeCP2.y, bStart.x, bStart.y);
-	// 	ctx.strokeStyle = "gray";
+		// 	ctx.strokeStyle = "gray";
 		ctx.lineWidth = 3;
 		ctx.stroke();
 		ctx.closePath();
-		
+
+		// start and end are messed up, but here they are fixed left to right
+		this.lidCurveParams = {
+			startPointTop: {x: -d * this.dir, y: 0}, endPointTop: tEnd, controlPointTop1: tCP1, controlPointTop2: tCP2,
+			endPointBottom: bStart, startPointBottom: bEnd, controlPointBottom1: bRidgeCP1, controlPointBottom2: bRidgeCP2
+		};
+
 		// top eye crease
 		ctx.beginPath();
 		ctx.moveTo(-d * this.dir - p * 0.9 * this.dir, p * 0.1);
 		ctx.bezierCurveTo(-rP*1.3 * this.dir,-h*1.2,rP * this.dir,-h*1.2, d*this.dir + p*this.dir, 0);
-		// 	ctx.strokeStyle = "gray";
 		ctx.lineWidth = 3;
 		ctx.shadowBlur = 7;
 		ctx.shadowColor = "black";
 		ctx.stroke();
 		ctx.closePath();
-		
-		// bottom crease
-			
+
+		this.drawLashes(ctx);
 	}
 
 	// Coordinates of handles (in canvas plane)
@@ -235,11 +231,53 @@ ED.Lids.prototype.draw = function(_point) {
 	this.handleArray[1].location = this.transform.transformPoint(this.squiggleArray[0].pointsArray[1]); // top lid - ptosis
 		
 	// Draw handles if selected
-	if (this.isSelected && !this.isForDrawing) this.drawHandles(_point);
+	if (this.isSelected && !this.isForDrawing) {
+		this.drawHandles(_point);
+	}
 
 	// Return value indicating successful hittest
 	return this.isClicked;
-}
+};
+
+// a helper for epiphora to anchor to the lower lid
+ED.Lids.prototype.getLidCurveParams = function() {
+	return this.lidCurveParams;
+};
+
+ED.Lids.prototype.drawLashes = function(ctx) {
+	ctx.beginPath();
+	for (let t = 0.05; t < 1; t += 0.1) {
+		let bezPoint = MathHelper.calculateBezierPoints(t, this.lidCurveParams.startPointBottom, this.lidCurveParams.endPointBottom, this.lidCurveParams.controlPointBottom1, this.lidCurveParams.controlPointBottom2);
+		ctx.moveTo(bezPoint.x, bezPoint.y);
+		ctx.quadraticCurveTo(bezPoint.x+15, bezPoint.y+15, bezPoint.x, bezPoint.y+30);
+	}
+	for (let t = 0.05; t < 1; t += 0.1) {
+		let bezPoint = MathHelper.calculateBezierPoints(t, this.lidCurveParams.startPointTop, this.lidCurveParams.endPointTop, this.lidCurveParams.controlPointTop1, this.lidCurveParams.controlPointTop2);
+		ctx.moveTo(bezPoint.x, bezPoint.y);
+		ctx.quadraticCurveTo(bezPoint.x+15, bezPoint.y-15, bezPoint.x, bezPoint.y-30);
+	}
+	ctx.stroke();
+};
+
+ED.Lids.prototype.drawPuncta = function(ctx) {
+	let y0 = 30;
+	ctx.beginPath();
+	let p1 = MathHelper.calculateBezierPoints(.99, this.lidCurveParams.startPointTop, this.lidCurveParams.endPointTop, this.lidCurveParams.controlPointTop1, this.lidCurveParams.controlPointTop2);
+	ctx.moveTo(p1.x, p1.y);
+	ctx.lineTo(p1.x + 20, p1.y - 25);
+	ctx.lineTo(340,y0);
+	ctx.lineTo(400,y0);
+
+	let p2 = MathHelper.calculateBezierPoints(.99, this.lidCurveParams.startPointBottom, this.lidCurveParams.endPointBottom, this.lidCurveParams.controlPointBottom1, this.lidCurveParams.controlPointBottom2);
+	ctx.moveTo(p2.x, p2.y);
+	ctx.lineTo(p2.x + 20, p2.y + 25);
+	ctx.lineTo(340,y0);
+
+	ctx.strokeStyle = "rgba(250, 0, 0, 1)";
+	ctx.lineWidth = 10;
+	ctx.stroke();
+	ctx.closePath();
+};
 
 /**
  * Returns a string containing a text description of the doodle
@@ -247,26 +285,43 @@ ED.Lids.prototype.draw = function(_point) {
  * @returns {String} Description of doodle
  */
 ED.Lids.prototype.description = function() {
-	var bMP = this.squiggleArray[0].pointsArray[0];
-	var tMP = this.squiggleArray[0].pointsArray[1];
+	let bMP = this.squiggleArray[0].pointsArray[0];
+	let tMP = this.squiggleArray[0].pointsArray[1];
 	
-	var returnString = "";
+	let returnString = "";
 	
-	var ptosis = "";
-	if (tMP.y>=-57 && tMP.y<-38) ptosis = "Mild ptosis";
-	else if (tMP.y>=-38 && tMP.y<-19) ptosis = "Moderate ptosis";
-	else if (tMP.y>=-19) ptosis = "Severe ptosis";
+	let ptosis = "";
+	if (tMP.y>=-57 && tMP.y<-38) {
+		ptosis = "Mild ptosis";
+	}
+	else if (tMP.y>=-38 && tMP.y<-19) {
+		ptosis = "Moderate ptosis";
+	} else if (tMP.y>=-19) {
+		ptosis = "Severe ptosis";
+	}
 	
 	// TODO: change to an arc tangent to define ectropion?
-	var ectropion = "";
-	if (bMP.y>132 && bMP.x*this.dir > 90) ectropion = "Medial ectropion";
-	else if (bMP.y>132 && bMP.x*this.dir < -90) ectropion = "Lateral ectropion";
-	else if (bMP.y>132) ectropion = "Ectropion";
+	let ectropion = "";
+
+	if (bMP.y>132 && bMP.x*this.dir > 90) {
+		ectropion = "Medial ectropion";
+	} else if (bMP.y>132 && bMP.x*this.dir < -90) {
+		ectropion = "Lateral ectropion";
+	} else if (bMP.y>132) {
+		ectropion = "Ectropion";
+	}
 	
-	if (ptosis.length > 0) returnString += ptosis;
-	if (ptosis.length > 0 && ectropion.length > 0) returnString += ", ";
-	if (ectropion.length > 0) returnString += ectropion;
+	if (ptosis.length > 0) {
+		returnString += ptosis;
+	}
+
+	if (ptosis.length > 0 && ectropion.length > 0) {
+		returnString += ", ";
+	}
+
+	if (ectropion.length > 0) {
+		returnString += ectropion;
+	}
 	
 	return returnString;
-	
-}
+};

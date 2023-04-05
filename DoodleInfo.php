@@ -100,6 +100,7 @@ class DoodleInfo
         'CornealSuture' => 'Corneal Suture',
         'EntrySiteBreak' => 'Entry site break',
         'EpiretinalMembrane' => 'Epiretinal membrane',
+        'Epiphora' => 'Epiphora',
         'Episcleritis' => 'Episcleritis',
         'PeripheralVascularisation' => 'Peripheral Vascularisation',
         'CornealThinning' => 'Corneal Thinning',

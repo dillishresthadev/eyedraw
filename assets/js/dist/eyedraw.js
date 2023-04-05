@@ -3328,9 +3328,9 @@ ED.Drawing.prototype.flipDrawingHorizontally = function () {
  * @param {Int} _order
  * @param {Object} linkedDoodleParameters
  */
-ED.Doodle = function(_drawing, _parameterJSON) {
+ED.Doodle = function (_drawing, _parameterJSON) {
 	// Function called as part of prototype assignment has no parameters passed
-	if (typeof(_drawing) !== 'undefined') {
+	if (typeof (_drawing) !== 'undefined') {
 		// Drawing containing this doodle
 		this.drawing = _drawing;
 
@@ -3547,7 +3547,7 @@ ED.Doodle = function(_drawing, _parameterJSON) {
 		}
 
 		// New doodle (constructor called with _drawing parameter only)
-		if (typeof(_parameterJSON) == 'undefined') {
+		if (typeof (_parameterJSON) == 'undefined') {
 
 			// Default is to put new doodle in front
 			this.order = this.drawing.doodleArray.length;
@@ -3652,16 +3652,13 @@ ED.Doodle = function(_drawing, _parameterJSON) {
 };
 
 //Things inherited from SearchItem
-ED.Doodle.prototype.getText = function()
-{
+ED.Doodle.prototype.getText = function () {
 	//Return the name of the doodle
 };
-ED.Doodle.prototype.getIcon = function()
-{
+ED.Doodle.prototype.getIcon = function () {
 	//Return the icon for the doodle
 };
-ED.Doodle.prototype.AddToED = function()
-{
+ED.Doodle.prototype.AddToED = function () {
 	//Find the drawing in the ED area, then attempt to call add on it
 	//Alternatively piggyback on the current behaviour to add this to the selected drawing when this is called
 };
@@ -3672,7 +3669,7 @@ ED.Doodle.prototype.AddToED = function()
  * @param {String} _string String containing object from JSON string
  * @param {String} _type Type of object
  */
-ED.Doodle.prototype.parseObjectString = function(_string, _type) {
+ED.Doodle.prototype.parseObjectString = function (_string, _type) {
 	var returnObject = false;
 	switch (_type) {
 		case 'date':
@@ -3691,29 +3688,29 @@ ED.Doodle.prototype.parseObjectString = function(_string, _type) {
 /**
  * Sets default handle attributes (overridden by subclasses)
  */
-ED.Doodle.prototype.setHandles = function() {};
+ED.Doodle.prototype.setHandles = function () { };
 
 /**
  * Sets default properties (overridden by subclasses)
  */
-ED.Doodle.prototype.setPropertyDefaults = function() {};
+ED.Doodle.prototype.setPropertyDefaults = function () { };
 
 /**
  * Sets default parameters (overridden by subclasses)
  */
-ED.Doodle.prototype.setParameterDefaults = function() {};
+ED.Doodle.prototype.setParameterDefaults = function () { };
 
 /**
  * Sets position in array relative to other relevant doodles (overridden by subclasses)
  */
-ED.Doodle.prototype.position = function() {};
+ED.Doodle.prototype.position = function () { };
 
 /**
  * Called on attempt to delete doodle, and returns permission (overridden by subclasses)
  *
  * @returns {Bool} True if OK to delete
  */
-ED.Doodle.prototype.willDelete = function() {
+ED.Doodle.prototype.willDelete = function () {
 	return true;
 };
 
@@ -3786,7 +3783,7 @@ ED.Doodle.prototype.move = function (_x, _y) {
  *
  * @returns {Float} Orientation in radians
  */
-ED.Doodle.prototype.orientation = function() {
+ED.Doodle.prototype.orientation = function () {
 	// Get position of centre of display (canvas plane relative to centre) and of an arbitrary point vertically above
 	var canvasCentre = new ED.Point(0, 0);
 	var canvasTop = new ED.Point(0, -100);
@@ -3803,7 +3800,7 @@ ED.Doodle.prototype.orientation = function() {
  *
  * @param {Point} _point Optional point in canvas plane, passed if performing hit test
  */
-ED.Doodle.prototype.draw = function(_point) {
+ED.Doodle.prototype.draw = function (_point) {
 	// Determine function mode
 	if (typeof (_point) !== 'undefined') {
 		this.drawFunctionMode = ED.drawFunctionMode.HitTest;
@@ -3842,7 +3839,7 @@ ED.Doodle.prototype.draw = function(_point) {
  *
  * @param {Point} _point Optional point in canvas plane, passed if performing hit test
  */
-ED.Doodle.prototype.drawHandles = function(_point) {
+ED.Doodle.prototype.drawHandles = function (_point) {
 	// Reset handle index and selected ring
 	if (this.drawFunctionMode == ED.drawFunctionMode.HitTest) {
 		this.draggingHandleIndex = null;
@@ -3914,19 +3911,18 @@ ED.Doodle.prototype.drawHandles = function(_point) {
 	ctx.restore();
 };
 
-ED.Doodle.prototype.hitTest = function(ctx, _point)
-{
+ED.Doodle.prototype.hitTest = function (ctx, _point) {
 	var result;
-    // Workaround for Mozilla bug 405300 https://bugzilla.mozilla.org/show_bug.cgi?id=405300
-    if (ED.isFirefox()) {
-        ctx.save();
-        ctx.setTransform(1, 0, 0, 1, 0, 0);
-        result = this.hitTestMethod === 'stroke' ? ctx.isPointInStroke(_point.x, _point.y) : ctx.isPointInPath(_point.x, _point.y);
-        ctx.restore();
-    } else {
-        result = this.hitTestMethod === 'stroke' ? ctx.isPointInStroke(_point.x, _point.y) : ctx.isPointInPath(_point.x, _point.y);
-    }
-    return result;
+	// Workaround for Mozilla bug 405300 https://bugzilla.mozilla.org/show_bug.cgi?id=405300
+	if (ED.isFirefox()) {
+		ctx.save();
+		ctx.setTransform(1, 0, 0, 1, 0, 0);
+		result = this.hitTestMethod === 'stroke' ? ctx.isPointInStroke(_point.x, _point.y) : ctx.isPointInPath(_point.x, _point.y);
+		ctx.restore();
+	} else {
+		result = this.hitTestMethod === 'stroke' ? ctx.isPointInStroke(_point.x, _point.y) : ctx.isPointInPath(_point.x, _point.y);
+	}
+	return result;
 };
 
 /**
@@ -3934,7 +3930,7 @@ ED.Doodle.prototype.hitTest = function(ctx, _point)
  *
  * @param {Point} _point Optional point in canvas plane, passed if performing hit test
  */
-ED.Doodle.prototype.drawBoundary = function(_point, mode) {
+ED.Doodle.prototype.drawBoundary = function (_point, mode) {
 	if (mode === undefined) {
 		mode = this.drawFunctionMode;
 	}
@@ -3991,7 +3987,7 @@ ED.Doodle.prototype.drawBoundary = function(_point, mode) {
 /**
  * Draws extra items if the doodle is highlighted
  */
-ED.Doodle.prototype.drawHighlightExtras = function() {
+ED.Doodle.prototype.drawHighlightExtras = function () {
 };
 
 /**
@@ -3999,7 +3995,7 @@ ED.Doodle.prototype.drawHighlightExtras = function() {
  *
  * @param {Bool} _flag Flag determining whether display is shown or not shown
  */
-ED.Doodle.prototype.setDisplayOfParameterControls = function(_flag) {
+ED.Doodle.prototype.setDisplayOfParameterControls = function (_flag) {
 	for (var parameter in this.parameterValidationArray) {
 		var validation = this.parameterValidationArray[parameter];
 		if (validation.display) {
@@ -4029,7 +4025,7 @@ ED.Doodle.prototype.setDisplayOfParameterControls = function(_flag) {
  *
  * @returns {String} Group description
  */
-ED.Doodle.prototype.groupDescription = function() {
+ED.Doodle.prototype.groupDescription = function () {
 	return "";
 };
 
@@ -4050,7 +4046,7 @@ ED.Doodle.prototype.groupDescription = function() {
  *
  * @returns {String} Description of doodle
  */
-ED.Doodle.prototype.description = function() {
+ED.Doodle.prototype.description = function () {
 	return "";
 };
 
@@ -4059,7 +4055,7 @@ ED.Doodle.prototype.description = function() {
  *
  * @returns {String} Group description end
  */
-ED.Doodle.prototype.groupDescriptionEnd = function() {
+ED.Doodle.prototype.groupDescriptionEnd = function () {
 	return "";
 };
 
@@ -4068,7 +4064,7 @@ ED.Doodle.prototype.groupDescriptionEnd = function() {
  *
  * @returns {Int} SnoMed code of entity representated by doodle
  */
-ED.Doodle.prototype.snomedCode = function() {
+ED.Doodle.prototype.snomedCode = function () {
 	return 0;
 };
 
@@ -4077,7 +4073,7 @@ ED.Doodle.prototype.snomedCode = function() {
  *
  * @returns {Int} Position in diagnostic hierarchy
  */
-ED.Doodle.prototype.diagnosticHierarchy = function() {
+ED.Doodle.prototype.diagnosticHierarchy = function () {
 	return 0;
 };
 
@@ -4087,7 +4083,7 @@ ED.Doodle.prototype.diagnosticHierarchy = function() {
  *
  * @returns {Array}
  */
-ED.Doodle.prototype.snomedCodes = function() {
+ED.Doodle.prototype.snomedCodes = function () {
 	return new Array([this.snomedCode(), this.diagnosticHierarchy()]);
 };
 
@@ -4099,7 +4095,7 @@ ED.Doodle.prototype.snomedCodes = function() {
  * @value {Undefined} _value Value of parameter to calculate
  * @returns {Array} Associative array of values of dependent parameters
  */
-ED.Doodle.prototype.dependentParameterValues = function(_parameter, _value) {
+ED.Doodle.prototype.dependentParameterValues = function (_parameter, _value) {
 	return [];
 };
 
@@ -4109,7 +4105,7 @@ ED.Doodle.prototype.dependentParameterValues = function(_parameter, _value) {
  * @param {String} _parameter Name of parameter for which dependent parameters will be updated
  * @param {Boolean} _updateBindings Update the doodle form control bindings?
  */
-ED.Doodle.prototype.updateDependentParameters = function(_parameter, _updateBindings) {
+ED.Doodle.prototype.updateDependentParameters = function (_parameter, _updateBindings) {
 	// Retrieve list of dependent parameters and set them
 	var valueArray = this.dependentParameterValues(_parameter, this[_parameter]);
 	for (var parameter in valueArray) {
@@ -4132,7 +4128,7 @@ ED.Doodle.prototype.updateDependentParameters = function(_parameter, _updateBind
  * @param {Boolean} _trim=true Trim the value prior to validation
  * @returns {Array} Array containing a bool indicating validity, and the correctly formatted value of the parameter
  */
-ED.Doodle.prototype.validateParameter = function(_parameter, _value, _trim) {
+ED.Doodle.prototype.validateParameter = function (_parameter, _value, _trim) {
 
 	_trim = _trim === undefined ? true : _trim;
 
@@ -4274,14 +4270,14 @@ ED.Doodle.prototype.validateParameter = function(_parameter, _value, _trim) {
  * @param {String} _parameter Name of the parameter
  * @returns {String} ID for a control element
  */
-ED.Doodle.prototype.parameterControlElementId = function(_parameter) {
+ED.Doodle.prototype.parameterControlElementId = function (_parameter) {
 	return this.drawing.canvas.id + '_' + _parameter + '_control';
 };
 
 /**
  * Runs when doodle is selected by the user
  */
-ED.Doodle.prototype.onSelection = function() {
+ED.Doodle.prototype.onSelection = function () {
 	// Show control bar
 	if (this.drawing.showDoodleControls) {
 		this.showDoodleControls();
@@ -4291,7 +4287,7 @@ ED.Doodle.prototype.onSelection = function() {
 /**
  * Runs when doodle is deselected by the user
  */
-ED.Doodle.prototype.onDeselection = function() {
+ED.Doodle.prototype.onDeselection = function () {
 	// Hide control bar
 	if (this.drawing.showDoodleControls) {
 		this.removeDoodleControls();
@@ -4302,7 +4298,7 @@ ED.Doodle.prototype.onDeselection = function() {
  * Creates an array of control elements
  * @return {Array}    The array of elements.
  */
-ED.Doodle.prototype.getControlElements = function() {
+ED.Doodle.prototype.getControlElements = function () {
 	var elements = [];
 	for (var parameter in this.controlParameterArray) {
 		// Create element
@@ -4316,7 +4312,7 @@ ED.Doodle.prototype.getControlElements = function() {
 /**
  * Add bindings to the control elements.
  */
-ED.Doodle.prototype.addControlBindings = function() {
+ED.Doodle.prototype.addControlBindings = function () {
 	for (var parameter in this.controlParameterArray) {
 		if (!parameter in this.parameterValidationArray) {
 			continue;
@@ -4342,7 +4338,7 @@ ED.Doodle.prototype.addControlBindings = function() {
  * @param  {String} _parameter Parameter name
  * @param  {Boolean} _valid     Is the parameter value valid?
  */
-ED.Doodle.prototype.showControlValidationMsg = function(_parameter, _valid) {
+ED.Doodle.prototype.showControlValidationMsg = function (_parameter, _valid) {
 
 	if (!(_parameter in this.controlParameterArray)) {
 		return;
@@ -4350,7 +4346,7 @@ ED.Doodle.prototype.showControlValidationMsg = function(_parameter, _valid) {
 
 	var elementId = this.parameterControlElementId(_parameter);
 
-	var label = document.querySelector('[for='+elementId+']');
+	var label = document.querySelector('[for=' + elementId + ']');
 	if (!label) return;
 
 	var msg = label.querySelector('.validation-msg');
@@ -4372,7 +4368,7 @@ ED.Doodle.prototype.showControlValidationMsg = function(_parameter, _valid) {
  * Generate and append the control elements to the DOM.
  * @param  {HTMLElement} controlDiv The container element.
  */
-ED.Doodle.prototype.showDoodleControls = function(controlDiv) {
+ED.Doodle.prototype.showDoodleControls = function (controlDiv) {
 
 	// Find the container element
 	if (!controlDiv) {
@@ -4386,7 +4382,7 @@ ED.Doodle.prototype.showDoodleControls = function(controlDiv) {
 	}
 
 	// Append controls to the container
-	this.getControlElements().forEach(function(element) {
+	this.getControlElements().forEach(function (element) {
 		controlDiv.appendChild(element);
 	});
 
@@ -4398,7 +4394,7 @@ ED.Doodle.prototype.showDoodleControls = function(controlDiv) {
  * Remove controls elements.
  * @param  {HTMLElement} controlDiv The container element.
  */
-ED.Doodle.prototype.removeDoodleControls = function(controlDiv) {
+ED.Doodle.prototype.removeDoodleControls = function (controlDiv) {
 
 	// Find the container element
 	if (!controlDiv) {
@@ -4416,7 +4412,7 @@ ED.Doodle.prototype.removeDoodleControls = function(controlDiv) {
 	}
 
 	// Remove elements
-	while(controlDiv.hasChildNodes()){
+	while (controlDiv.hasChildNodes()) {
 		controlDiv.removeChild(controlDiv.lastChild);
 	}
 };
@@ -4427,7 +4423,7 @@ ED.Doodle.prototype.removeDoodleControls = function(controlDiv) {
  * @param {String} _parameter Name of the parameter
  * @returns {String} _id ID for a control element
  */
-ED.Doodle.prototype.parameterElement = function(_parameter, showLabel) {
+ED.Doodle.prototype.parameterElement = function (_parameter, showLabel) {
 	if (showLabel === undefined)
 		showLabel = true;
 
@@ -4530,12 +4526,12 @@ ED.Doodle.prototype.parameterElement = function(_parameter, showLabel) {
 			element.setAttribute('id', this.parameterControlElementId(_parameter));
 			break;
 
-// 		case 'radio':
-// 			// Create a radio button element
-// 			element = document.createElement('input');
-//     		element.type = 'checkbox';
-//     		element.setAttribute('id', this.parameterControlElementId(_parameter));
-//     		break;
+		// 		case 'radio':
+		// 			// Create a radio button element
+		// 			element = document.createElement('input');
+		//     		element.type = 'checkbox';
+		//     		element.setAttribute('id', this.parameterControlElementId(_parameter));
+		//     		break;
 
 		default:
 			ED.errorHandler('ED.Doodle', 'parameterElement', 'Unexpected type: ' + this.parameterValidationArray[_parameter].type + ' for parameter: ' + _parameter);
@@ -4570,7 +4566,7 @@ ED.Doodle.prototype.parameterElement = function(_parameter, showLabel) {
  * @param {Boolean} _updateBindings Update the doodle form control bindings? We don't want to update the
  * bindings if the new param values originated from the bound controls.
  */
-ED.Doodle.prototype.setParameterWithAnimation = function(_parameter, _value, _updateBindings) {
+ED.Doodle.prototype.setParameterWithAnimation = function (_parameter, _value, _updateBindings) {
 
 	// Attempt to get parameter value
 	var valueArray = this.dependentParameterValues(_parameter, _value);
@@ -4648,7 +4644,7 @@ ED.Doodle.prototype.setParameterWithAnimation = function(_parameter, _value, _up
  * @param {String} _parameter Name of parameter
  * @param {Undefined} _value New value of parameter
  */
-ED.Doodle.prototype.setSimpleParameter = function(_parameter, _value) {
+ED.Doodle.prototype.setSimpleParameter = function (_parameter, _value) {
 	// Create notification message var messageArray = {eventName:_eventName, selectedDoodle:this.selectedDoodle, object:_object};
 	var object = new Object;
 	object.doodle = this;
@@ -4670,9 +4666,9 @@ ED.Doodle.prototype.setSimpleParameter = function(_parameter, _value) {
  * @param {String} _value New value of parameter
  * @param {Boolean} _updateBindings Update form element bindings?
  */
-ED.Doodle.prototype.setParameterFromString = function(_parameter, _value, _updateBindings) {
+ED.Doodle.prototype.setParameterFromString = function (_parameter, _value, _updateBindings) {
 	// Check type of passed value variable
-	var type = typeof(_value);
+	var type = typeof (_value);
 	if (type != 'string') {
 		ED.errorHandler('ED.Doodle', 'setParameterFromString', '_value parameter should be of type string, not ' + type);
 	}
@@ -4751,7 +4747,7 @@ ED.Doodle.prototype.setParameterFromString = function(_parameter, _value, _updat
  * @param {String} _first Displacement of first doodle
  * @param {String} _next Displacement of subsequent doodles
  */
-ED.Doodle.prototype.setOriginWithDisplacements = function(_first, _next) {
+ED.Doodle.prototype.setOriginWithDisplacements = function (_first, _next) {
 	this.originX = this.drawing.eye == ED.eye.Right ? -_first : _first;
 	this.originY = -_first;
 
@@ -4779,10 +4775,10 @@ ED.Doodle.prototype.setOriginWithDisplacements = function(_first, _next) {
  * @param {Int} _first Rotation in degrees of first doodle anticlockwise right eye, clockwise left eye
  * @param {Int} _next Additional rotation of subsequent doodles
  */
-ED.Doodle.prototype.setOriginWithRotations = function(_radius, _first, _next) {
+ED.Doodle.prototype.setOriginWithRotations = function (_radius, _first, _next) {
 	var direction = this.drawing.eye == ED.eye.Right ? -1 : 1;
 
-	var origin = new ED.Point(0,0);
+	var origin = new ED.Point(0, 0);
 	origin.setWithPolars(_radius, direction * _first * Math.PI / 180);
 
 	// Get last doodle to be added
@@ -4808,7 +4804,7 @@ ED.Doodle.prototype.setOriginWithRotations = function(_radius, _first, _next) {
  * @param {int} _first Rotation in degrees of first doodle anticlockwise right eye, clockwise left eye
  * @param {int} _next Additional rotation of subsequent doodles
  */
-ED.Doodle.prototype.setRotationWithDisplacements = function(_first, _next) {
+ED.Doodle.prototype.setRotationWithDisplacements = function (_first, _next) {
 	var direction = this.drawing.eye == ED.eye.Right ? -1 : 1;
 	var newRotation;
 	var doodle;
@@ -4833,7 +4829,7 @@ ED.Doodle.prototype.setRotationWithDisplacements = function(_first, _next) {
 /**
  * Deselects doodle
  */
-ED.Doodle.prototype.deselect = function() {
+ED.Doodle.prototype.deselect = function () {
 	// Deselect
 	this.isSelected = false;
 	this.drawing.selectedDoodle = null;
@@ -4848,7 +4844,7 @@ ED.Doodle.prototype.deselect = function() {
  * @param {String} _parameter Name of parameter
  * @returns {String} Value of parameter
  */
-ED.Doodle.prototype.getParameter = function(_parameter) {
+ED.Doodle.prototype.getParameter = function (_parameter) {
 	// Retrieve validation object for this doodle
 	var validation = this.parameterValidationArray[_parameter];
 
@@ -4917,7 +4913,7 @@ ED.Doodle.prototype.getParameter = function(_parameter) {
  * @param {String} _value New value of parameter
  * @param {Boolean} _updateBindings Update the doodle form control bindings?
  */
-ED.Doodle.prototype.increment = function(_parameter, _value, _updateBindings) {
+ED.Doodle.prototype.increment = function (_parameter, _value, _updateBindings) {
 	// Increment parameter and framecounter
 	var currentValue = this[_parameter];
 	this.animationDataArray[_parameter]['frameCounter']++;
@@ -4944,7 +4940,7 @@ ED.Doodle.prototype.increment = function(_parameter, _value, _updateBindings) {
 
 		// Start timer and set to call this function again after interval
 		var doodle = this;
-		this.animationDataArray[_parameter]['timer'] = setTimeout(function() {
+		this.animationDataArray[_parameter]['timer'] = setTimeout(function () {
 			doodle.increment(_parameter, _value, _updateBindings);
 		}, interval);
 	}
@@ -4959,12 +4955,12 @@ ED.Doodle.prototype.increment = function(_parameter, _value, _updateBindings) {
  * @param {String} _parameter Name of parameter to be bound
  * @param {String} _fieldParameters Details of bound HTML element
  */
-ED.Doodle.prototype.addBinding = function(_parameter, _fieldParameters) {
+ED.Doodle.prototype.addBinding = function (_parameter, _fieldParameters) {
 	var elementId = _fieldParameters['id'];
 	var attribute = _fieldParameters['attribute'];
 
 	// Check that doodle has a parameter of this name
-	if (typeof(this[_parameter]) != 'undefined') {
+	if (typeof (this[_parameter]) != 'undefined') {
 		// Get reference to HTML element
 		var element = document.getElementById(elementId);
 
@@ -4996,7 +4992,7 @@ ED.Doodle.prototype.addBinding = function(_parameter, _fieldParameters) {
 						else {
 							this.drawing.updateBindings(this);
 						}
-						element.addEventListener('change', listener = function(event) {
+						element.addEventListener('change', listener = function (event) {
 							drawing.eventHandler('onchange', id, className, this.id, this.checked.toString());
 						}, false);
 					}
@@ -5010,7 +5006,7 @@ ED.Doodle.prototype.addBinding = function(_parameter, _fieldParameters) {
 								this.setParameterFromString(_parameter, element.options[element.selectedIndex].getAttribute(attribute));
 							}
 						}
-						element.addEventListener('change', listener = function(event) {
+						element.addEventListener('change', listener = function (event) {
 							drawing.eventHandler('onchange', id, className, this.id, this.options[this.selectedIndex].getAttribute(attribute));
 						}, false);
 					} else {
@@ -5022,7 +5018,7 @@ ED.Doodle.prototype.addBinding = function(_parameter, _fieldParameters) {
 						else {
 							this.drawing.updateBindings(this);
 						}
-						element.addEventListener('change', listener = function(event) {
+						element.addEventListener('change', listener = function (event) {
 							drawing.eventHandler('onchange', id, className, this.id, this.value);
 						}, false);
 					}
@@ -5042,7 +5038,7 @@ ED.Doodle.prototype.addBinding = function(_parameter, _fieldParameters) {
 						}
 
 						// Change event for input fields are only invoked when the input element is blurred.
-						element.addEventListener('change', listener = function(event) {
+						element.addEventListener('change', listener = function (event) {
 							drawing.eventHandler('onchange', id, className, this.id, this.value);
 						}, false);
 					}
@@ -5051,12 +5047,12 @@ ED.Doodle.prototype.addBinding = function(_parameter, _fieldParameters) {
 				default:
 					if (attribute) {
 						this.setParameterFromString(_parameter, element.getAttribute(attribute));
-						element.addEventListener('change', listener = function(event) {
+						element.addEventListener('change', listener = function (event) {
 							drawing.eventHandler('onchange', id, className, this.id, this.getAttribute(attribute));
 						}, false);
 					} else {
 						this.setParameterFromString(_parameter, element.value);
-						element.addEventListener('change', listener = function(event) {
+						element.addEventListener('change', listener = function (event) {
 							drawing.eventHandler('onchange', id, className, this.id, this.value);
 						}, false);
 					}
@@ -5078,7 +5074,7 @@ ED.Doodle.prototype.addBinding = function(_parameter, _fieldParameters) {
  *
  * @param {String} _parameter Name of parameter whosse binding is to be removed
  */
-ED.Doodle.prototype.removeBinding = function(_parameter) {
+ED.Doodle.prototype.removeBinding = function (_parameter) {
 
 	// Get id of corresponding element
 	var elementId;
@@ -5107,11 +5103,11 @@ ED.Doodle.prototype.removeBinding = function(_parameter) {
  * @param {Int} _Offset Optional integer offset (1 to 11)
  * @returns {Int} Clock hour from 1 to 12
  */
-ED.Doodle.prototype.clockHour = function(_offset) {
+ED.Doodle.prototype.clockHour = function (_offset) {
 	var clockHour;
 	var offset;
 
-	if (typeof(_offset) != 'undefined') offset = _offset
+	if (typeof (_offset) != 'undefined') offset = _offset
 	else offset = 0;
 
 	if (this.isRotatable && !this.isMoveable) {
@@ -5132,7 +5128,7 @@ ED.Doodle.prototype.clockHour = function(_offset) {
  *
  * @returns {String} Description of quadrant
  */
-ED.Doodle.prototype.quadrant = function() {
+ED.Doodle.prototype.quadrant = function () {
 	var returnString = "";
 
 	// Use trigonometry on rotation field to determine quadrant
@@ -5153,7 +5149,7 @@ ED.Doodle.prototype.quadrant = function() {
  *
  * @returns {Int} Degrees from 0 to 360
  */
-ED.Doodle.prototype.degrees = function() {
+ED.Doodle.prototype.degrees = function () {
 	var degrees;
 
 	if (this.isRotatable && !this.isMoveable) {
@@ -5174,7 +5170,7 @@ ED.Doodle.prototype.degrees = function() {
  *
  * @returns {Int} Clock hour from 1 to 12
  */
-ED.Doodle.prototype.clockHourExtent = function(label) {
+ED.Doodle.prototype.clockHourExtent = function (label) {
 	if (label === undefined) {
 		label = '';
 	} else {
@@ -5205,7 +5201,7 @@ ED.Doodle.prototype.clockHourExtent = function(label) {
  *
  * @returns {Int} Extent 0 to 360 degrees
  */
-ED.Doodle.prototype.degreesExtent = function() {
+ED.Doodle.prototype.degreesExtent = function () {
 	var degrees = this.arc * 180 / Math.PI;
 	var intDegrees = Math.round(degrees);
 	return intDegrees;
@@ -5216,7 +5212,7 @@ ED.Doodle.prototype.degreesExtent = function() {
  *
  * @returns {String} Text description of location
  */
-ED.Doodle.prototype.locationRelativeToDisc = function() {
+ED.Doodle.prototype.locationRelativeToDisc = function () {
 	var locationString = "";
 
 	// Right eye
@@ -5246,7 +5242,7 @@ ED.Doodle.prototype.locationRelativeToDisc = function() {
  *
  * @returns {String} Text description of location
  */
-ED.Doodle.prototype.locationRelativeToFovea = function() {
+ED.Doodle.prototype.locationRelativeToFovea = function () {
 	var locationString = "";
 
 	// Right eye
@@ -5275,7 +5271,7 @@ ED.Doodle.prototype.locationRelativeToFovea = function() {
 /**
  * Adds a new squiggle to the doodle's squiggle array
  */
-ED.Doodle.prototype.addSquiggle = function() {
+ED.Doodle.prototype.addSquiggle = function () {
 	// Get colour (stored as a HEX string in the doodle) and create colour object
 	var colourObject = new ED.Colour(0, 0, 0, 1);
 	colourObject.setWithHexString(this.colourString);
@@ -5310,7 +5306,7 @@ ED.Doodle.prototype.addSquiggle = function() {
  *
  * @param {Point} _point The point in the doodle plane to be added
  */
-ED.Doodle.prototype.addPointToSquiggle = function(_point) {
+ED.Doodle.prototype.addPointToSquiggle = function (_point) {
 	if (this.squiggleArray.length > 0) {
 		var index = this.squiggleArray.length - 1;
 		var squiggle = this.squiggleArray[index];
@@ -5322,7 +5318,7 @@ ED.Doodle.prototype.addPointToSquiggle = function(_point) {
 /**
  * Complete the active squiggle (last in the array)
  */
-ED.Doodle.prototype.completeSquiggle = function() {
+ED.Doodle.prototype.completeSquiggle = function () {
 	if (this.squiggleArray.length > 0) {
 		var index = this.squiggleArray.length - 1;
 		var squiggle = this.squiggleArray[index];
@@ -5336,7 +5332,7 @@ ED.Doodle.prototype.completeSquiggle = function() {
  *
  * @returns Arc value in radians
  */
-ED.Doodle.prototype.calculateArc = function() {
+ED.Doodle.prototype.calculateArc = function () {
 	// Transform extremity points to origin of 0,0
 	var left = new ED.Point(this.leftExtremity.x - this.drawing.canvas.width / 2, this.leftExtremity.y - this.drawing.canvas.height / 2);
 	var right = new ED.Point(this.rightExtremity.x - this.drawing.canvas.width / 2, this.rightExtremity.y - this.drawing.canvas.height / 2);
@@ -5351,7 +5347,7 @@ ED.Doodle.prototype.calculateArc = function() {
  * @param {ED.Point} _point The point to test
  * @returns {ED.Point} The nearest point
  */
-ED.Doodle.prototype.nearestPointTo = function(_point) {
+ED.Doodle.prototype.nearestPointTo = function (_point) {
 	// Check that pointsArray has content
 	if (this.pointsArray.length > 0) {
 		var min = 10000000; // Greater than square of maximum separation in doodle plane
@@ -5383,7 +5379,7 @@ ED.Doodle.prototype.nearestPointTo = function(_point) {
  * @param {Float} _angle The angle to test
  * @returns {Float} The nearest angle
  */
-ED.Doodle.prototype.nearestAngleTo = function(_angle) {
+ED.Doodle.prototype.nearestAngleTo = function (_angle) {
 	// Check that anglesArray has content
 	if (this.anglesArray.length > 0) {
 		var min = 2 * Math.PI; // Greater than one complete rotation
@@ -5416,7 +5412,7 @@ ED.Doodle.prototype.nearestAngleTo = function(_angle) {
  * @param {Float} _arc The angle to test
  * @returns {Float} The nearest angle
  */
-ED.Doodle.prototype.nearestArcTo = function(_arc) {
+ED.Doodle.prototype.nearestArcTo = function (_arc) {
 	// Check that arcArray has content
 	if (this.arcArray.length > 0) {
 		var min = 2 * Math.PI; // Greater than one complete rotation
@@ -5448,7 +5444,7 @@ ED.Doodle.prototype.nearestArcTo = function(_arc) {
  *
  * @returns {String} A JSON encoded string representing the variable properties of the doodle
  */
-ED.Doodle.prototype.json = function() {
+ED.Doodle.prototype.json = function () {
 
 	// Start of JSON string
 	var s = '{';
@@ -5459,7 +5455,7 @@ ED.Doodle.prototype.json = function() {
 	s = s + '"subclass":' + '"' + this.className + '",';
 
 	// Only save values of parameters specified in savedParameterArray
-	if (typeof(this.savedParameterArray) != 'undefined') {
+	if (typeof (this.savedParameterArray) != 'undefined') {
 		if (this.savedParameterArray.length > 0) {
 			for (var i = 0; i < this.savedParameterArray.length; i++) {
 				var p = this.savedParameterArray[i];
@@ -5468,7 +5464,7 @@ ED.Doodle.prototype.json = function() {
 				var o = this[p];
 
 				// Offset the scale.
-				switch(p) {
+				switch (p) {
 					case 'scaleX':
 					case 'scaleY':
 					case 'originX':
@@ -5486,17 +5482,17 @@ ED.Doodle.prototype.json = function() {
 					o = (o * 180 / Math.PI).toFixed(0);
 				} else if (p == 'originX' || p == 'originY' || p == 'radius' || p == 'apexX' || p == 'apexY' || p == 'width' || p == 'height') {
 					o = o.toFixed(0);
-				} else if (typeof(o) == 'number') {
+				} else if (typeof (o) == 'number') {
 					o = o.toFixed(2);
-				} else if (typeof(o) == 'string') {
+				} else if (typeof (o) == 'string') {
 					o = o.replace('<', '&lt;');
 					o = '"' + o + '"';
-				} else if (typeof(o) == 'boolean') {
+				} else if (typeof (o) == 'boolean') {
 					o = o;
-				} else if (typeof(o) == 'object') {
+				} else if (typeof (o) == 'object') {
 					o = JSON.stringify(o);
 				} else {
-					ED.errorHandler('ED.Doodle', 'json', 'Attempt to create json for parameter ' + p + ' with an unhandled parameter type: ' + typeof(o));
+					ED.errorHandler('ED.Doodle', 'json', 'Attempt to create json for parameter ' + p + ' with an unhandled parameter type: ' + typeof (o));
 					o = "ERROR";
 				}
 
@@ -5536,7 +5532,7 @@ ED.Doodle.prototype.json = function() {
  * @param {Float} _r Radius
  * @param {String} _colour String containing colour
  */
-ED.Doodle.prototype.drawSpot = function(_ctx, _x, _y, _r, _colour) {
+ED.Doodle.prototype.drawSpot = function (_ctx, _x, _y, _r, _colour) {
 	_ctx.save();
 	_ctx.beginPath();
 	_ctx.arc(_x, _y, _r, 0, Math.PI * 2, true);
@@ -5548,21 +5544,21 @@ ED.Doodle.prototype.drawSpot = function(_ctx, _x, _y, _r, _colour) {
 	_ctx.restore();
 };
 
-ED.Doodle.prototype.drawStellate = function(_ctx, _x, _y, _r, _colour) {
+ED.Doodle.prototype.drawStellate = function (_ctx, _x, _y, _r, _colour) {
 	_ctx.save();
 	_ctx.beginPath();
 
 	//x, y is the middle
-	const topLeft = new ED.Point(_x-_r, _y-_r);
-	const topRight = new ED.Point(_x+_r, _y-_r);
-	const bottomLeft = new ED.Point(_x-_r, _y+_r);
-	const bottomRight = new ED.Point(_x+_r, _y+_r);
+	const topLeft = new ED.Point(_x - _r, _y - _r);
+	const topRight = new ED.Point(_x + _r, _y - _r);
+	const bottomLeft = new ED.Point(_x - _r, _y + _r);
+	const bottomRight = new ED.Point(_x + _r, _y + _r);
 
 	// calculate the 4 control points
-	const cpt1 = new ED.Point(topLeft.x + (_r*2*0.4), topLeft.y + (_r*2*0.4)); // top left
-	const cpt2 = new ED.Point(topLeft.x + (_r*2*0.6), topLeft.y + (_r*2*0.4)); // top right
-	const cpt3 = new ED.Point(topLeft.x + (_r*2*0.4), topLeft.y + (_r*2*0.6)); // bottom left
-	const cpt4 = new ED.Point(topLeft.x + (_r*2*0.6), topLeft.y + (_r*2*0.6)); // bottom right
+	const cpt1 = new ED.Point(topLeft.x + (_r * 2 * 0.4), topLeft.y + (_r * 2 * 0.4)); // top left
+	const cpt2 = new ED.Point(topLeft.x + (_r * 2 * 0.6), topLeft.y + (_r * 2 * 0.4)); // top right
+	const cpt3 = new ED.Point(topLeft.x + (_r * 2 * 0.4), topLeft.y + (_r * 2 * 0.6)); // bottom left
+	const cpt4 = new ED.Point(topLeft.x + (_r * 2 * 0.6), topLeft.y + (_r * 2 * 0.6)); // bottom right
 
 	_ctx.moveTo(topLeft.x, topLeft.y);
 	// top
@@ -5593,7 +5589,7 @@ ED.Doodle.prototype.drawStellate = function(_ctx, _x, _y, _r, _colour) {
  * @param {Int} _lineWidth Line width in pixels
  * @param {String} _strokeColour String containing stroke colour
  */
-ED.Doodle.prototype.drawCircle = function(_ctx, _x, _y, _r, _fillColour, _lineWidth, _strokeColour) {
+ED.Doodle.prototype.drawCircle = function (_ctx, _x, _y, _r, _fillColour, _lineWidth, _strokeColour) {
 	_ctx.save();
 	_ctx.beginPath();
 	_ctx.arc(_x, _y, _r, 0, Math.PI * 2, true);
@@ -5616,7 +5612,7 @@ ED.Doodle.prototype.drawCircle = function(_ctx, _x, _y, _r, _fillColour, _lineWi
  * @param {Float} _w Width of line
  * @param {String} _colour String containing colour
  */
-ED.Doodle.prototype.drawLine = function(_ctx, _x1, _y1, _x2, _y2, _w, _colour) {
+ED.Doodle.prototype.drawLine = function (_ctx, _x1, _y1, _x2, _y2, _w, _colour) {
 	_ctx.save();
 	_ctx.beginPath();
 	_ctx.moveTo(_x1, _y1);
@@ -5634,7 +5630,7 @@ ED.Doodle.prototype.drawLine = function(_ctx, _x1, _y1, _x2, _y2, _w, _colour) {
  * @param {Float} _x X-coordinate of origin
  * @param {Float} _y Y-coordinate of origin
  */
-ED.Doodle.prototype.drawLaserSpot = function(_ctx, _x, _y) {
+ED.Doodle.prototype.drawLaserSpot = function (_ctx, _x, _y) {
 	this.drawCircle(_ctx, _x, _y, 15, "Yellow", 10, "rgba(255, 128, 0, 1)");
 };
 
@@ -5645,7 +5641,7 @@ ED.Doodle.prototype.drawLaserSpot = function(_ctx, _x, _y) {
  * @param {Float} _x X-coordinate of origin
  * @param {Float} _y Y-coordinate of origin
  */
-ED.Doodle.prototype.drawNFLHaem = function(_ctx, _x, _y) {
+ED.Doodle.prototype.drawNFLHaem = function (_ctx, _x, _y) {
 	// Parameters
 	var r = 10;
 
@@ -5653,11 +5649,11 @@ ED.Doodle.prototype.drawNFLHaem = function(_ctx, _x, _y) {
 	var p = new ED.Point(_x, _y);
 
 	// Create two new points 'tangential'
-	var phi1 = p.direction() + Math.PI/2;
-	var phi2 = p.direction() + 3 * Math.PI/2;
-	var p1 = new ED.Point(0,0);
+	var phi1 = p.direction() + Math.PI / 2;
+	var phi2 = p.direction() + 3 * Math.PI / 2;
+	var p1 = new ED.Point(0, 0);
 	p1.setWithPolars(r, phi1);
-	var p2 = new ED.Point(0,0);
+	var p2 = new ED.Point(0, 0);
 	p2.setWithPolars(r, phi2);
 
 	// Draw line
@@ -5681,16 +5677,16 @@ ED.Doodle.prototype.drawNFLHaem = function(_ctx, _x, _y) {
  * @param {Float} _w Width
  * @param {Float} _h Height
  */
-ED.Doodle.prototype.addEllipseToPath = function(_ctx, _x, _y, _w, _h) {
+ED.Doodle.prototype.addEllipseToPath = function (_ctx, _x, _y, _w, _h) {
 	var kappa = 0.5522848;
 	var ox = (_w / 2) * kappa;
 	var oy = (_h / 2) * kappa;
 
-	_ctx.moveTo(-_w/2, 0);
-	_ctx.bezierCurveTo(_x - _w/2, _y - oy, _x - ox, _y - _h/2, _x, _y - _h/2);
-	_ctx.bezierCurveTo(_x + ox, _y - _h/2, _x + _w/2, _y - oy, _x + _w/2, _y);
-	_ctx.bezierCurveTo(_x + _w/2, _y + oy, _x + ox, _y + _h/2, _x, _y + _h/2);
-	_ctx.bezierCurveTo(_x - ox, _y + _h/2, _x - _w/2, _y + oy, _x - _w/2, _y);
+	_ctx.moveTo(-_w / 2, 0);
+	_ctx.bezierCurveTo(_x - _w / 2, _y - oy, _x - ox, _y - _h / 2, _x, _y - _h / 2);
+	_ctx.bezierCurveTo(_x + ox, _y - _h / 2, _x + _w / 2, _y - oy, _x + _w / 2, _y);
+	_ctx.bezierCurveTo(_x + _w / 2, _y + oy, _x + ox, _y + _h / 2, _x, _y + _h / 2);
+	_ctx.bezierCurveTo(_x - ox, _y + _h / 2, _x - _w / 2, _y + oy, _x - _w / 2, _y);
 };
 
 /**
@@ -5700,7 +5696,7 @@ ED.Doodle.prototype.addEllipseToPath = function(_ctx, _x, _y, _w, _h) {
  * @param {Float} _y y coordinate of point
  * @returns {Float} x coordinate of point
  */
-ED.Doodle.prototype.xForY = function(_r, _y) {
+ED.Doodle.prototype.xForY = function (_r, _y) {
 	return Math.sqrt(_r * _r - _y * _y);
 };
 
@@ -5708,13 +5704,13 @@ ED.Doodle.prototype.xForY = function(_r, _y) {
  * Set the scale level.
  * @param {Number} _level The scaling level.
  */
-ED.Doodle.prototype.setScaleLevel = function(_newLevel) {
+ED.Doodle.prototype.setScaleLevel = function (_newLevel) {
 	var diff = (_newLevel / this.scaleLevel);
 	this.adjustScaleAndPosition(diff);
 	this.scaleLevel = _newLevel;
 };
 
-ED.Doodle.prototype.adjustScaleAndPosition = function(amount){
+ED.Doodle.prototype.adjustScaleAndPosition = function (amount) {
 	this.scaleX *= amount;
 	this.scaleY *= amount;
 	this.originX *= amount;
@@ -5723,8 +5719,8 @@ ED.Doodle.prototype.adjustScaleAndPosition = function(amount){
 	if (this.lastOriginY) this.lastOriginY *= amount;
 };
 
-ED.Doodle.prototype.getLinkedParameters = function(linkedDoodleClass) {
-	if (typeof(this.linkedDoodleParameters[linkedDoodleClass]) != "undefined") {
+ED.Doodle.prototype.getLinkedParameters = function (linkedDoodleClass) {
+	if (typeof (this.linkedDoodleParameters[linkedDoodleClass]) != "undefined") {
 		return this.linkedDoodleParameters[linkedDoodleClass];
 	}
 }
@@ -5732,7 +5728,7 @@ ED.Doodle.prototype.getLinkedParameters = function(linkedDoodleClass) {
 /**
  * Outputs doodle information to the console
  */
-ED.Doodle.prototype.debug = function() {
+ED.Doodle.prototype.debug = function () {
 	console.log('org: ' + this.originX + " : " + this.originY);
 	console.log('apx: ' + this.apexX + " : " + this.apexY);
 	console.log('rot: ' + this.rotation * 180 / Math.PI);
@@ -5752,7 +5748,7 @@ ED.Doodle.prototype.debug = function() {
  * @param {Enum} _mode
  * @param {Bool} _isRotatable
  */
-ED.Doodle.Handle = function(_location, _isVisible, _mode, _isRotatable) {
+ED.Doodle.Handle = function (_location, _isVisible, _mode, _isRotatable) {
 	// Properties
 	if (_location == null) {
 		this.location = new ED.Point(0, 0);
@@ -8198,22 +8194,22 @@ ED.Label.prototype.onSelection = function() {
 
 var MathHelper = MathHelper || {};
 
-MathHelper.calculateLinearFunctionFromPoints = function(x1, y1, x2, y2, x) {
-    /** y = f(x) = a * x + b */
-    var a = (y2 - y1) / (x2 - x1);
-    var b = y2 - a * x2;
+MathHelper.calculateLinearFunctionFromPoints = function (x1, y1, x2, y2, x) {
+    let a = (y2 - y1) / (x2 - x1);
+    let b = y2 - a * x2;
+
     return a * x + b;
 };
 
-MathHelper.perpendicularToLine = function(x1, y1, x2, y2, x3, y3, dist) {
+MathHelper.perpendicularToLine = function (x1, y1, x2, y2, x3, y3, dist) {
     let a = y1 - y2;
     let b = x2 - x1;
-    let norm = Math.sqrt(a*a + b*b);
+    let norm = Math.sqrt(a * a + b * b);
     a = a / norm;
     b = b / norm;
     let x4 = x3 + a * dist;
     let y4 = y3 + b * dist;
-    return {x: x4, y: y4};
+    return { x: x4, y: y4 };
 };
 
 MathHelper.calculateBezierPoints = function (t, startPoint, endPoint, controlPoint1, controlPoint2) {
@@ -8221,9 +8217,10 @@ MathHelper.calculateBezierPoints = function (t, startPoint, endPoint, controlPoi
     let B1_t = 3 * t * Math.pow((1 - t), 2);
     let B2_t = 3 * Math.pow(t, 2) * (1 - t);
     let B3_t = Math.pow(t, 3);
-    let x = (B0_t * startPoint.x) + (B1_t * controlPoint1.x) + (B2_t * controlPoint2.x) + (B3_t * endPoint.x)
-    let y = (B0_t * startPoint.y) + (B1_t * controlPoint1.y) + (B2_t * controlPoint2.y) + (B3_t * endPoint.y)
-    return {x:x, y:y};
+    let x = (B0_t * startPoint.x) + (B1_t * controlPoint1.x) + (B2_t * controlPoint2.x) + (B3_t * endPoint.x);
+    let y = (B0_t * startPoint.y) + (B1_t * controlPoint1.y) + (B2_t * controlPoint2.y) + (B3_t * endPoint.y);
+
+    return { x: x, y: y };
 };
 
 /**
@@ -35313,6 +35310,194 @@ ED.EntrySiteBreak.prototype.draw = function(_point) {
  */
 
 /**
+ * Epiphora
+ *
+ * @class Epiphora
+ * @property {String} className Name of doodle subclass
+ * @param {Drawing} _drawing
+ * @param {Object} _parameterJSON
+ */
+ED.Epiphora = function (_drawing, _parameterJSON) {
+    // Set classname
+    this.className = "Epiphora";
+
+    // Private parameters
+    this.degree = '+';
+
+    // Saved parameters
+    this.savedParameterArray = ['degree', 'originX'];
+
+    this.controlParameterArray = { 'degree': 'degree' };
+
+    // Call superclass constructor
+    ED.Doodle.call(this, _drawing, _parameterJSON);
+};
+
+/**
+ * Sets superclass and constructor
+ */
+ED.Epiphora.prototype = new ED.Doodle;
+ED.Epiphora.prototype.constructor = ED.Epiphora;
+ED.Epiphora.superclass = ED.Doodle.prototype;
+
+/**
+ * Sets default dragging attributes
+ */
+ED.Epiphora.prototype.setPropertyDefaults = function () {
+    this.isMoveable = true;
+    this.isRotatable = false;
+    this.isScaleable = false;
+    this.isUnique = true;
+    this.originX = 0;
+    this.originY = 0;
+    this.drawX = 0;
+    this.drawY = 0;
+
+    this.parameterValidationArray.degree = {
+        kind: 'derived',
+        type: 'string',
+        list: ['+', '++', '+++'],
+        animate: false
+    };
+};
+
+/**
+ * Sets default parameters
+ */
+ED.Epiphora.prototype.setParameterDefaults = function () {
+    this.setParameterFromString('degree', '+');
+};
+
+/**
+ * Draws doodle or performs a hit test if a Point parameter is passed
+ *
+ * @param {Point} _point Optional point in canvas plane, passed if performing hit test
+ */
+
+ED.Epiphora.prototype.dependentParameterValues = function (_parameter, _value) {
+    var returnArray = {};
+
+    switch (_parameter) {
+        case 'degree':
+            switch (_value) {
+                case '+':
+                    returnArray.size = 50;
+                    break;
+                case '++':
+                    returnArray.size = 75;
+                    break;
+                case '+++':
+                    returnArray.size = 100;
+                    break;
+            }
+            break;
+    }
+
+    return returnArray;
+};
+
+
+ED.Epiphora.prototype.draw = function (_point) {
+
+    // attach to lower lid
+    this.originY = 0;
+    let lidsDoodle = this.drawing.firstDoodleOfClass('Lids');
+    if (lidsDoodle) {
+        let lidParams = lidsDoodle.getLidCurveParams();
+        let minPoint = Math.min(lidParams.startPointBottom.x, lidParams.endPointBottom.x) / 2;
+        let maxPoint = Math.max(lidParams.startPointBottom.x, lidParams.endPointBottom.x) / 2;
+
+        if (this.originX < minPoint) {
+            this.originX = minPoint;
+        }
+
+        if (this.originX > maxPoint) {
+            this.originX = maxPoint;
+        }
+
+        let t = 1 - (this.originX - lidParams.endPointBottom.x / 2) / (lidParams.startPointBottom.x - lidParams.endPointBottom.x) * 2;
+
+        let bezPoint = MathHelper.calculateBezierPoints(t, lidParams.startPointBottom, lidParams.endPointBottom, lidParams.controlPointBottom1, lidParams.controlPointBottom2);
+        this.drawY = bezPoint.y;
+        this.drawX = bezPoint.x - this.originX;
+    } else {
+        this.drawX = this.originX;
+    }
+
+    // Get context
+    var ctx = this.drawing.context;
+
+    // Call draw method in superclass
+    ED.Epiphora.superclass.draw.call(this, _point);
+
+    // Boundary path
+    let y1 = this.drawY + this.size;
+    let curviness = 5;
+    let arcGap = 0.75;
+    let phi1 = Math.PI * 1.5 - arcGap;
+    let phi2 = Math.PI * 1.5 + arcGap;
+    let arcX = this.drawX;
+    let arcY = this.drawY + this.size * 2;
+    let arcRadius = this.size;
+
+    let arcStart = new ED.Point();
+    arcStart.setWithPolars(arcRadius, phi1 + Math.PI / 2);
+
+    ctx.beginPath();
+    ctx.arc(arcX, arcY, arcRadius, phi1, phi2, true);
+    ctx.quadraticCurveTo(this.drawX + this.size / curviness, y1 - this.size / curviness, this.drawX, this.drawY);
+    ctx.quadraticCurveTo(this.drawX - this.size / curviness, y1 - this.size / curviness, arcX + arcStart.x, arcY + arcStart.y);
+
+    ctx.stroke();
+    // Close path
+    ctx.closePath();
+
+    // Colour of fill
+    ctx.strokeStyle = "rgba(0,209,0,1)";
+    ctx.fillStyle = ctx.strokeStyle;
+
+    // Draw boundary path (also hit testing)
+    this.drawBoundary(_point);
+
+    // Return value indicating successful hittest
+    return this.isClicked;
+};
+
+/**
+ * Returns a string containing a text description of the doodle
+ *
+ * @returns {String} Description of doodle
+ */
+ED.Epiphora.prototype.description = function () {
+    return "Epiphora " + this.degree;
+};
+
+/**
+ * Returns the SnoMed code of the doodle
+ *
+ * @returns {number} SnoMed code of entity represented by doodle
+ */
+ED.Epiphora.prototype.snomedCode = function () {
+    return 193982009;
+};
+
+/**
+ * OpenEyes
+ *
+ * Copyright (C) OpenEyes Foundation, 2011-2017
+ * This file is part of OpenEyes.
+ * OpenEyes is free software: you can redistribute it and/or modify it under the terms of the GNU Affero General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ * OpenEyes is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Affero General Public License for more details.
+ * You should have received a copy of the GNU Affero General Public License along with OpenEyes in a file titled COPYING. If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @package OpenEyes
+ * @link http://www.openeyes.org.uk
+ * @author OpenEyes <info@openeyes.org.uk>
+ * @copyright Copyright 2011-2017, OpenEyes Foundation
+ * @license http://www.gnu.org/licenses/agpl-3.0.html The GNU Affero General Public License V3.0
+ */
+
+/**
  * Epiretinal Membrane
  *
  * @class EpiretinalMembrane
@@ -46078,7 +46263,7 @@ ED.Lids = function(_drawing, _parameterJSON) {
 
 	// Call superclass constructor
 	ED.Doodle.call(this, _drawing, _parameterJSON);
-}
+};
 
 /**
  * Sets superclass and constructor
@@ -46093,7 +46278,7 @@ ED.Lids.superclass = ED.Doodle.prototype;
 ED.Lids.prototype.setHandles = function() {
 	this.handleArray[0] = new ED.Doodle.Handle(null, true, ED.Mode.Handles, true);
 	this.handleArray[1] = new ED.Doodle.Handle(null, true, ED.Mode.Handles, true);
-}
+};
 
 /**
  * Sets default dragging attributes
@@ -46106,7 +46291,7 @@ ED.Lids.prototype.setPropertyDefaults = function() {
 	this.isShowHighlight = false;
 	
 	// Create ranges to constrain handles
-	this.handleCoordinateRangeArray = new Array();
+	this.handleCoordinateRangeArray = [];
 	this.handleCoordinateRangeArray[0] = {
 		// lower lid
 		x: new ED.Range(-260, +260),
@@ -46123,19 +46308,18 @@ ED.Lids.prototype.setPropertyDefaults = function() {
  * Sets default parameters
  */
 ED.Lids.prototype.setParameterDefaults = function() {
-	if (this.drawing.eye != ED.eye.Right) {
-		this.dir = -1;
+	if (this.drawing.eye !== ED.eye.Right) {
+		this.drawing.flipDrawingHorizontally();
 	}
-	else if (this.drawing.eye != ED.eye.Left){
-		this.dir = +1;
-	}
-	
+
+	this.dir = +1;
+
 	// handle start position
 	this.apexX = 0;
 	this.apexY = 110;
-	
+
 	// Create a squiggle to store the handles points
-	var squiggle = new ED.Squiggle(this, new ED.Colour(100, 100, 100, 1), 4, true);
+	let squiggle = new ED.Squiggle(this, new ED.Colour(100, 100, 100, 1), 4, true);
 
 	// Add it to squiggle array
 	this.squiggleArray.push(squiggle);
@@ -46143,10 +46327,10 @@ ED.Lids.prototype.setParameterDefaults = function() {
 	// Populate with handles on each lid
 	var point1 = new ED.Point(0, 115);
 	this.squiggleArray[0].pointsArray.push(point1);
-	
+
 	var point2 = new ED.Point(0, -90);
-	this.squiggleArray[0].pointsArray.push(point2);	
-}
+	this.squiggleArray[0].pointsArray.push(point2);
+};
 
 /**
  * Draws doodle or performs a hit test if a Point parameter is passed
@@ -46155,43 +46339,45 @@ ED.Lids.prototype.setParameterDefaults = function() {
  */
 ED.Lids.prototype.draw = function(_point) {
 	// Get context
-	var ctx = this.drawing.context;
+	let ctx = this.drawing.context;
 
 	// Call draw method in superclass
 	ED.Lids.superclass.draw.call(this, _point);
 
 	// Arc radius
-	var d = 250;
-	
+	let d = 250;
+
 	// control point height
-	var h = 160;
-	
+	let h = 160;
+
 	// control point width
-	var w = 90;
-	
+	let w = 90;
+
 	// Pupil radius
-	var rP = 100;
-	
+	let rP = 100;
+
 	// punctum radius
-	var p = 45;
+	let p = 45;
 
-	
+
 	// Calculate control point positions for bezier curves
-	var bMP = this.squiggleArray[0].pointsArray[0];
-	var bStart = new ED.Point(d * this.dir, p + (bMP.y-115)/5);
-	var bEnd = new ED.Point(-d * this.dir, 0);
+	let bMP = this.squiggleArray[0].pointsArray[0];
+	let bStart = new ED.Point(d * this.dir, p + (bMP.y-115)/5);
+	let bEnd = new ED.Point(-d * this.dir, 0);
 
-	if (bMP.x*this.dir > 20) bStart.x += (bMP.x-20)/5;
-		
-	var bCP1 = new ED.Point(bMP.x + 60*this.dir, bMP.y * 1.45);
-	var bCP2 = new ED.Point(bMP.x - 180*this.dir, bMP.y * 1.16);
-	
-	var tMP = this.squiggleArray[0].pointsArray[1];
-	var tEnd = new ED.Point(d * this.dir, 0 + (tMP.y/5+19));
+	if (bMP.x*this.dir > 20) {
+		bStart.x += (bMP.x-20)/5;
+	}
 
-	var tCP1 = new ED.Point(-85 * this.dir, tMP.y * 1.3);
-	var tCP2 = new ED.Point(85 * this.dir, tMP.y * 1.35);
-	
+	let bCP1 = new ED.Point(bMP.x + 60*this.dir, bMP.y * 1.45);
+	let bCP2 = new ED.Point(bMP.x - 180*this.dir, bMP.y * 1.16);
+
+	let tMP = this.squiggleArray[0].pointsArray[1];
+	let tEnd = new ED.Point(d * this.dir, 0 + (tMP.y/5+19));
+
+	let tCP1 = new ED.Point(-85 * this.dir, tMP.y * 1.3);
+	let tCP2 = new ED.Point(85 * this.dir, tMP.y * 1.35);
+
 	// Boundary path
 	ctx.beginPath();
 
@@ -46210,7 +46396,7 @@ ED.Lids.prototype.draw = function(_point) {
 	ctx.bezierCurveTo(tCP1.x, tCP1.y, tCP2.x, tCP2.y, tEnd.x, tEnd.y);
 	
 	// Punctum
-		ctx.bezierCurveTo(d * 1.25 * this.dir, p*0.9, d * 1.2 * this.dir, p, bStart.x, bStart.y);
+	ctx.bezierCurveTo(d * 1.25 * this.dir, p*0.9, d * 1.2 * this.dir, p, bStart.x, bStart.y);
 	  
 	// Bottom lid
 	ctx.bezierCurveTo(bCP1.x, bCP1.y, bCP2.x, bCP2.y, bEnd.x, bEnd.y);
@@ -46220,18 +46406,16 @@ ED.Lids.prototype.draw = function(_point) {
 
 	// Set drawing attributes
 	ctx.lineWidth = 5;
-	ctx.fillStyle = "white"
+	ctx.fillStyle = "white";
 	ctx.strokeStyle = "rgba(0,0,0,0)";
 	ctx.shadowBlur = 15;
 	ctx.shadowColor = "rgba(0,0,0,0.8)";
-
 
 	// Draw boundary path (also hit testing)
 	this.drawBoundary(_point);
 
 	// Non-boundary paths
-	if (this.drawFunctionMode == ED.drawFunctionMode.Draw) {
-	
+	if (this.drawFunctionMode === ED.drawFunctionMode.Draw) {
 		// lids outline
 		ctx.beginPath();
 		ctx.moveTo(-d * this.dir,0);
@@ -46239,42 +46423,39 @@ ED.Lids.prototype.draw = function(_point) {
 		ctx.bezierCurveTo(d * 1.25 * this.dir, p*0.9, d * 1.2 * this.dir, p, bStart.x, bStart.y);
 		ctx.bezierCurveTo(bCP1.x, bCP1.y, bCP2.x, bCP2.y, bEnd.x, bEnd.y);
 		ctx.moveTo(-d * this.dir,0);
+		ctx.lineWidth = 5;
 		ctx.strokeStyle = "black";
 		ctx.stroke();
 		ctx.closePath();
-		
-		// top lashes (ish)
-		ctx.beginPath();
-		ctx.moveTo(bEnd.x, bEnd.y);
-		ctx.lineTo(bEnd.x - p * 0.5 * this.dir,bEnd.y + p*0.5 - tMP.y/5-19);
-		ctx.stroke();
-		ctx.closePath();
-		
-		
+
 		// bottom lid ridge
-		var bRidgeCP1 = new ED.Point(bMP.x - 170*this.dir, bMP.y * 1.38);
-		var bRidgeCP2 = new ED.Point(bMP.x + 70*this.dir, bMP.y * 1.45);
+		let bRidgeCP1 = new ED.Point(bMP.x - 170*this.dir, bMP.y * 1.38);
+		let bRidgeCP2 = new ED.Point(bMP.x + 70*this.dir, bMP.y * 1.45);
 		ctx.beginPath();
 		ctx.moveTo(-d * this.dir,0);
 		ctx.bezierCurveTo(bRidgeCP1.x, bRidgeCP1.y, bRidgeCP2.x, bRidgeCP2.y, bStart.x, bStart.y);
-	// 	ctx.strokeStyle = "gray";
+		// 	ctx.strokeStyle = "gray";
 		ctx.lineWidth = 3;
 		ctx.stroke();
 		ctx.closePath();
-		
+
+		// start and end are messed up, but here they are fixed left to right
+		this.lidCurveParams = {
+			startPointTop: {x: -d * this.dir, y: 0}, endPointTop: tEnd, controlPointTop1: tCP1, controlPointTop2: tCP2,
+			endPointBottom: bStart, startPointBottom: bEnd, controlPointBottom1: bRidgeCP1, controlPointBottom2: bRidgeCP2
+		};
+
 		// top eye crease
 		ctx.beginPath();
 		ctx.moveTo(-d * this.dir - p * 0.9 * this.dir, p * 0.1);
 		ctx.bezierCurveTo(-rP*1.3 * this.dir,-h*1.2,rP * this.dir,-h*1.2, d*this.dir + p*this.dir, 0);
-		// 	ctx.strokeStyle = "gray";
 		ctx.lineWidth = 3;
 		ctx.shadowBlur = 7;
 		ctx.shadowColor = "black";
 		ctx.stroke();
 		ctx.closePath();
-		
-		// bottom crease
-			
+
+		this.drawLashes(ctx);
 	}
 
 	// Coordinates of handles (in canvas plane)
@@ -46282,11 +46463,53 @@ ED.Lids.prototype.draw = function(_point) {
 	this.handleArray[1].location = this.transform.transformPoint(this.squiggleArray[0].pointsArray[1]); // top lid - ptosis
 		
 	// Draw handles if selected
-	if (this.isSelected && !this.isForDrawing) this.drawHandles(_point);
+	if (this.isSelected && !this.isForDrawing) {
+		this.drawHandles(_point);
+	}
 
 	// Return value indicating successful hittest
 	return this.isClicked;
-}
+};
+
+// a helper for epiphora to anchor to the lower lid
+ED.Lids.prototype.getLidCurveParams = function() {
+	return this.lidCurveParams;
+};
+
+ED.Lids.prototype.drawLashes = function(ctx) {
+	ctx.beginPath();
+	for (let t = 0.05; t < 1; t += 0.1) {
+		let bezPoint = MathHelper.calculateBezierPoints(t, this.lidCurveParams.startPointBottom, this.lidCurveParams.endPointBottom, this.lidCurveParams.controlPointBottom1, this.lidCurveParams.controlPointBottom2);
+		ctx.moveTo(bezPoint.x, bezPoint.y);
+		ctx.quadraticCurveTo(bezPoint.x+15, bezPoint.y+15, bezPoint.x, bezPoint.y+30);
+	}
+	for (let t = 0.05; t < 1; t += 0.1) {
+		let bezPoint = MathHelper.calculateBezierPoints(t, this.lidCurveParams.startPointTop, this.lidCurveParams.endPointTop, this.lidCurveParams.controlPointTop1, this.lidCurveParams.controlPointTop2);
+		ctx.moveTo(bezPoint.x, bezPoint.y);
+		ctx.quadraticCurveTo(bezPoint.x+15, bezPoint.y-15, bezPoint.x, bezPoint.y-30);
+	}
+	ctx.stroke();
+};
+
+ED.Lids.prototype.drawPuncta = function(ctx) {
+	let y0 = 30;
+	ctx.beginPath();
+	let p1 = MathHelper.calculateBezierPoints(.99, this.lidCurveParams.startPointTop, this.lidCurveParams.endPointTop, this.lidCurveParams.controlPointTop1, this.lidCurveParams.controlPointTop2);
+	ctx.moveTo(p1.x, p1.y);
+	ctx.lineTo(p1.x + 20, p1.y - 25);
+	ctx.lineTo(340,y0);
+	ctx.lineTo(400,y0);
+
+	let p2 = MathHelper.calculateBezierPoints(.99, this.lidCurveParams.startPointBottom, this.lidCurveParams.endPointBottom, this.lidCurveParams.controlPointBottom1, this.lidCurveParams.controlPointBottom2);
+	ctx.moveTo(p2.x, p2.y);
+	ctx.lineTo(p2.x + 20, p2.y + 25);
+	ctx.lineTo(340,y0);
+
+	ctx.strokeStyle = "rgba(250, 0, 0, 1)";
+	ctx.lineWidth = 10;
+	ctx.stroke();
+	ctx.closePath();
+};
 
 /**
  * Returns a string containing a text description of the doodle
@@ -46294,29 +46517,47 @@ ED.Lids.prototype.draw = function(_point) {
  * @returns {String} Description of doodle
  */
 ED.Lids.prototype.description = function() {
-	var bMP = this.squiggleArray[0].pointsArray[0];
-	var tMP = this.squiggleArray[0].pointsArray[1];
+	let bMP = this.squiggleArray[0].pointsArray[0];
+	let tMP = this.squiggleArray[0].pointsArray[1];
 	
-	var returnString = "";
+	let returnString = "";
 	
-	var ptosis = "";
-	if (tMP.y>=-57 && tMP.y<-38) ptosis = "Mild ptosis";
-	else if (tMP.y>=-38 && tMP.y<-19) ptosis = "Moderate ptosis";
-	else if (tMP.y>=-19) ptosis = "Severe ptosis";
+	let ptosis = "";
+	if (tMP.y>=-57 && tMP.y<-38) {
+		ptosis = "Mild ptosis";
+	}
+	else if (tMP.y>=-38 && tMP.y<-19) {
+		ptosis = "Moderate ptosis";
+	} else if (tMP.y>=-19) {
+		ptosis = "Severe ptosis";
+	}
 	
 	// TODO: change to an arc tangent to define ectropion?
-	var ectropion = "";
-	if (bMP.y>132 && bMP.x*this.dir > 90) ectropion = "Medial ectropion";
-	else if (bMP.y>132 && bMP.x*this.dir < -90) ectropion = "Lateral ectropion";
-	else if (bMP.y>132) ectropion = "Ectropion";
+	let ectropion = "";
+
+	if (bMP.y>132 && bMP.x*this.dir > 90) {
+		ectropion = "Medial ectropion";
+	} else if (bMP.y>132 && bMP.x*this.dir < -90) {
+		ectropion = "Lateral ectropion";
+	} else if (bMP.y>132) {
+		ectropion = "Ectropion";
+	}
 	
-	if (ptosis.length > 0) returnString += ptosis;
-	if (ptosis.length > 0 && ectropion.length > 0) returnString += ", ";
-	if (ectropion.length > 0) returnString += ectropion;
+	if (ptosis.length > 0) {
+		returnString += ptosis;
+	}
+
+	if (ptosis.length > 0 && ectropion.length > 0) {
+		returnString += ", ";
+	}
+
+	if (ectropion.length > 0) {
+		returnString += ectropion;
+	}
 	
 	return returnString;
-	
-}
+};
+
 /**
  * OpenEyes
  *
