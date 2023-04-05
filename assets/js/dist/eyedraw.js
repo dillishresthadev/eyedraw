@@ -57415,14 +57415,14 @@ ED.RetinoscopyPowerCross.prototype.setPropertyDefaults = function() {
 	    kind: 'other',
         type: 'float',
         precision: 2,
-        range: new ED.Range(-20, 20),
+        range: new ED.Range(-35, 35),
         animate: false
     };
     this.parameterValidationArray['power2'] = {
         kind: 'other',
         type: 'float',
         precision: 2,
-        range: new ED.Range(-20, 20),
+        range: new ED.Range(-35, 35),
         animate: false
     };
 
