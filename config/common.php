@@ -35,6 +35,7 @@ return array(
                     'basePath' => 'application.modules.eyedraw.assets',
                     'depends' => array(
                         'eventemitter2',
+                        'jquery', // a package that should be defined in core
                         'mustache' // a package that should be defined in core
                     ),
                 )
