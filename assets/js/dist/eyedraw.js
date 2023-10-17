@@ -8084,8 +8084,17 @@ ED.Label.prototype.draw = function(_point) {
 
 	// Non boundary paths here
 	if (this.drawFunctionMode == ED.drawFunctionMode.Draw) {
+
+		ctx.save();
+		let dir = 1;
+		if (this.drawing.isFlipped) {
+			dir = -1;
+		}
+		ctx.scale(dir, 1);
+
 		// Draw text
 		ctx.fillText(labelText, -this.labelWidth / 2 + this.padding, this.labelHeight / 6);
+		ctx.restore();
 
 		// Coordinate of start of arrow
 		var arrowStart = new ED.Point(0, 0);
@@ -46263,6 +46272,9 @@ ED.Lids = function(_drawing, _parameterJSON) {
 
 	// Call superclass constructor
 	ED.Doodle.call(this, _drawing, _parameterJSON);
+	if (this.drawing.eye === ED.eye.Left) {
+		this.drawing.flipDrawingHorizontally();
+	}
 };
 
 /**
@@ -46308,10 +46320,6 @@ ED.Lids.prototype.setPropertyDefaults = function() {
  * Sets default parameters
  */
 ED.Lids.prototype.setParameterDefaults = function() {
-	if (this.drawing.eye !== ED.eye.Right) {
-		this.drawing.flipDrawingHorizontally();
-	}
-
 	this.dir = +1;
 
 	// handle start position

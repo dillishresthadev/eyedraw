@@ -31,6 +31,9 @@ ED.Lids = function(_drawing, _parameterJSON) {
 
 	// Call superclass constructor
 	ED.Doodle.call(this, _drawing, _parameterJSON);
+	if (this.drawing.eye === ED.eye.Left) {
+		this.drawing.flipDrawingHorizontally();
+	}
 };
 
 /**
@@ -76,10 +79,6 @@ ED.Lids.prototype.setPropertyDefaults = function() {
  * Sets default parameters
  */
 ED.Lids.prototype.setParameterDefaults = function() {
-	if (this.drawing.eye !== ED.eye.Right) {
-		this.drawing.flipDrawingHorizontally();
-	}
-
 	this.dir = +1;
 
 	// handle start position
